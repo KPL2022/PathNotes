@@ -1,0 +1,11 @@
+<img src="/assets/logos_trans.png" class="logo-img">
+
+<nav class="landing-opts">
+
+    <div *ngFor="let option of currentOptions">
+
+        <a class="opt-dec" [routerLink]="['/core-disp', option.name]">
+            {{ option.name }}
+        </a>
+    </div>
+</nav>

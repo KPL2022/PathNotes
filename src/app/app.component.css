@@ -1,0 +1,6 @@
+:host, .entry-container {
+
+  flex: 100%;
+
+  display: flex;
+}

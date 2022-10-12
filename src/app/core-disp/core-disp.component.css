@@ -1,0 +1,15 @@
+:host {
+
+  flex: 100%;
+
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+}
+
+.disp-container {
+
+  flex: 92%;
+  
+  display: flex;
+}
