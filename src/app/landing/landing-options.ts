@@ -7,9 +7,14 @@ export interface LandingOption {
 export const currentOptions = [
 
     {
-        name: 'journal',
+        name: 'mindmap',
         accessToken: 'test-token',
         icon: '/assets/flaticon/sn_mm.png'
+    },
+    {
+        name: 'journal',
+        accessToken: 'test-token',
+        icon: '/assets/flaticon/sn_journal.png'
     },
     {
 
