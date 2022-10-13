@@ -1,11 +1,13 @@
-<img src="/assets/logos_trans.png" class="logo-img">
+<img src="/assets/logo_trans.png" class="logo-img">
 
 <nav class="landing-opts">
 
-    <div *ngFor="let option of currentOptions">
+    <ng-container *ngFor="let option of currentOptions">
 
-        <a class="opt-dec" [routerLink]="['/core-disp', option.name]">
-            {{ option.name }}
-        </a>
-    </div>
+        <ng-container *ngIf="option.name !== ''">
+            <a class="opt-dec" [routerLink]="['/core-disp', option.name]">
+                {{ option.name }}
+            </a>
+        </ng-container>
+    </ng-container>
 </nav>

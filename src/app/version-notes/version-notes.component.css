@@ -1,0 +1,50 @@
+:host, .v-note-inner-frame {
+
+  flex: 100%;
+
+  display: flex;
+}
+
+.v-note-inner-frame {
+
+  margin: 10px;
+  padding-left: 10px;
+
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+
+  background-color: rgba(0, 0, 0, 0.7);
+  
+  border-radius: 25px;
+  border: 3px solid rgba(0, 0, 0, 0.31);
+
+  color: rgba(255, 255, 255, 0.814);
+}
+
+.v-note-body, .v-note-credits, .v-note-footer {
+
+  flex: auto;
+}
+
+a {
+
+  color: rgba(255, 255, 255, 0.814);
+}
+
+p {
+
+  margin: 5px;
+}
+
+li {
+
+  margin: 5px;
+}
+
+.v-note-footer {
+
+  display: flex;
+
+  flex-flow: column nowrap;
+  justify-content: flex-end;
+}

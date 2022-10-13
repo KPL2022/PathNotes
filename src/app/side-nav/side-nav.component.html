@@ -1,1 +1,10 @@
-side nav
+<div class="side-nav-stripe">
+
+  <ng-container class="sn-dest-opts" *ngFor="let option of currentOptions">
+
+    <div class="sn-opt-frame" [ngClass]="option.name === currentOpt ? 'frame-on' : 'frame-off'">
+      <a [routerLink]="option.name" [ngClass]="option.name === currentOpt ? 'active' : 'idle'"
+    [style]="{'background-image': 'url(' + option.icon + ')'}"></a>
+    </div>
+  </ng-container>
+</div>

@@ -5,11 +5,20 @@
   display: flex;
   flex-flow: row nowrap;
   justify-content: flex-start;
+
+  background-image: url("/assets/main_disp_bkgd.jpeg");
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .disp-container {
 
-  flex: 92%;
+  flex: 94%;
   
   display: flex;
+
+  background-color: rgba(255, 255, 255, 0.35);
+  border-radius: 25px;
+  margin: 10px;
 }
+

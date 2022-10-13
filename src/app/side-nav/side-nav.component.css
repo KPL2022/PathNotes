@@ -1,7 +1,48 @@
 :host {
 
-  flex: 8%;
+  flex: 6%;
 
-  background-color: rgba(0, 0, 0, 0.647);
-  color: white;
+  background-color: rgba(0, 0, 0, 0.874);
+
+  display: flex;
 }
+
+.side-nav-stripe {
+
+  flex: 100%;
+
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+.frame-off, .frame-on {
+
+  flex: 0 0 12%;
+
+  display: flex;
+}
+
+.frame-on {
+
+  background-color: rgba(255, 255, 255, 0.06);
+  border-left: 5px solid white;
+}
+
+.active, .idle {
+
+  flex: 100%;
+
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin: 15px;
+}
+
+.active {
+
+  transition: margin 300ms ease-in-out;
+  margin: 10px;
+}
+
+

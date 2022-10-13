@@ -1,4 +1,45 @@
 :host {
 
   flex: 100%;
+
 }
+
+.exp-layout {
+
+  width: 100%;
+  height: 85%;
+
+  border: 5px solid black;
+
+  display: flex;
+
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+}
+
+.exp-controls {
+
+  width: 100%;
+  height: 15%;
+
+  border: 3px solid purple;
+}
+
+.workshop-panel {
+
+  flex: 69%;
+
+  border: 3px solid white;
+
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+}
+
+.completed-items {
+
+  flex: 29%;
+
+  border: 3px solid blue;
+}
+

@@ -4,8 +4,9 @@ import { CoreDispComponent } from './core-disp/core-disp.component';
 import { ExploreComponent } from './explore/explore.component';
 import { JournalComponent } from './journal/journal.component';
 import { LandingComponent } from './landing/landing.component';
+import { VersionNotesComponent } from './version-notes/version-notes.component';
 
-const routes: Routes = [
+export const routes: Routes = [
   
   { path: '', component: LandingComponent },
 
@@ -14,6 +15,7 @@ const routes: Routes = [
     children: [
       { path: 'explore', title: 'explore', component: ExploreComponent },
       { path: 'journal', title: 'journal', component: JournalComponent },
+      { path: 'version-notes', title: 'version-notes', component: VersionNotesComponent }
     ] 
   },
 ];

@@ -28,11 +28,12 @@
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-around;
+    align-items: center;
 }
 
 .opt-dec:link, .opt-dec:visited {
 
-    background-color: darkslategray;
+    background-color: rgba(0, 0, 0, 0.796);
     padding: 50px;
 
     border: 5px solid rgba(0, 0, 0, 0.538);
