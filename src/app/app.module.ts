@@ -25,7 +25,7 @@ import { GoalsComponent } from './goals/goals.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
   ],
   providers: [
 

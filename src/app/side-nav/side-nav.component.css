@@ -30,6 +30,11 @@
   border-left: 5px solid white;
 }
 
+.frame-off {
+
+  margin-left: 5px;
+}
+
 .active, .idle {
 
   flex: 100%;

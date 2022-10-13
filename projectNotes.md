@@ -75,4 +75,8 @@ https://stackoverflow.com/questions/56325272/detect-browser-refresh-in-an-angula
 
 36. https://angular.io/api/core/OnChanges#onchanges
 
-37. 
+37. routing security needs to be addressed
+
+38. https://stackoverflow.com/questions/65368420/using-flexlayoutmodule-gives-error-in-angular-11
+
+
