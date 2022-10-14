@@ -36,6 +36,7 @@ export class ListEntry implements RecordEntry {
   private id: number;
   private todoText: string;
   private completed: boolean;
+  private openForEdit: boolean = false;
 
   constructor(id: number, todoText: string, completed: boolean) {
 
@@ -59,14 +60,26 @@ export class ListEntry implements RecordEntry {
     return this.completed;
   }
 
+  isOpenForEdit() {
+
+    return this.openForEdit;
+  }
+
   setText(newItemTxt: string) {
 
     // TODO: imp
+    this.todoText = newItemTxt;
   }
 
   setStatus(newStatus: boolean) {
 
     // TODO: imp
+    this.completed = newStatus;
+  }
+
+  setEditFlag(newFlag: boolean) {
+
+    this.openForEdit = newFlag;
   }
 
   generateRecord(): string {

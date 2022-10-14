@@ -90,3 +90,31 @@
 
 
 }
+
+.entry-item, .edit-input {
+
+  font-size: xx-large;
+  border: 0;
+  border-radius: 25px;
+  color: rgba(0, 0, 0, 0.878);
+  background-color: rgba(255, 255, 255, 0.815);
+  padding: 10px;
+  outline: 0;
+  margin: 5px 0;
+  width: 90%;
+}
+
+.tog-btn {
+
+  background-image: url('/assets/flaticon/entry_incomp.png');
+  background-repeat: no-repeat;
+  background-size: contain;
+
+  padding: 20px;
+}
+
+.fin-icon {
+
+  width: 15%;
+  height: 15%;
+}

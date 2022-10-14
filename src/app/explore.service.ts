@@ -16,6 +16,11 @@ export class ExploreService {
     this.nxtId = coreRecords.loadRecordId('ListEntry');
    }
 
+  getEntryBook() {
+
+    return this.entryBook
+  }
+
   addEntry(todoText: string, status: boolean) {
 
     // TODO: imp
@@ -28,18 +33,31 @@ export class ExploreService {
   removeEntry(lstEntry: ListEntry) {
 
     // TODO: imp
+    this.entryBook.delete(lstEntry);
 
-
+    this.coreRecords.removeRecord('ListEntry', lstEntry);
   }
 
-  editEntry(lstEntry: ListEntry, newItemTxt: string) {
+  requestEdit(lstEntry: ListEntry) {
+
+    lstEntry.setEditFlag(true);
+  }
+
+  editEntry(lstEntry: ListEntry, ev: any) {
 
     // TODO: imp
+    lstEntry.setText(ev.target.value);
+    lstEntry.setEditFlag(!lstEntry.isOpenForEdit());
+
+    this.coreRecords.updateRecord('ListEntry', lstEntry);
   }
 
   toggleEntry(lstEntry: ListEntry) {
 
     // TODO: imp
+    lstEntry.setStatus(!lstEntry.isComplete());
+
+    this.coreRecords.updateRecord('ListEntry', lstEntry);
   }
 
 

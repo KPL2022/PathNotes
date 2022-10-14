@@ -9,14 +9,58 @@
         <app-goals></app-goals>
       </div>
 
-      <div class="cur-todos"></div>
+      <div class="cur-todos">
+
+        <ul class="cur-todos-list">
+
+          <ng-container *ngFor="let entry of entries">
+            
+            <ng-container *ngIf="!entry.isComplete()">
+
+              <li>
+
+                <button type="button" class="tog-btn" (click)="toggleEntry(entry)"></button>
+
+                <ng-container *ngIf="!entry.isOpenForEdit()">
+
+                  <span class="entry-item" (click)="requestEdit(entry)">{{ entry.getText() }}</span>
+                </ng-container>
+
+                <ng-container *ngIf="entry.isOpenForEdit()">
+
+                  <input spotlight type="text" class="edit-input" [value]="entry.getText()" (keydown.enter)="editEntry(entry, $event)" (blur)="editEntry(entry, $event)">
+                </ng-container>
+              </li>
+            </ng-container>
+          </ng-container>
+        </ul>
+      </div>
     </div>
     
-    <div class="completed-items"></div>
+    <div class="completed-items">
+
+      <ul class="completed-list">
+
+        <ng-container *ngFor="let entry of entries">
+
+          <ng-container *ngIf="entry.isComplete()">
+
+            <li>
+  
+              <img src="/assets/flaticon/entry_comp.png" class="fin-icon">
+  
+              <span>{{ entry.getText() }}</span>
+
+              <button type="button" (click)="removeEntry(entry)">X</button>
+            </li>
+          </ng-container>
+        </ng-container>
+      </ul>
+    </div>
   </div>
 
   <div class="exp-controls">
 
-    <input type="text" [(ngModel)]="inputText" class="exp-controls-input" (keyup.enter)="addEntry()">
+    <input type="text" [(ngModel)]="inputText" class="exp-controls-input" (keydown.enter)="addEntry()">
   </div>
 </div>

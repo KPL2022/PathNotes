@@ -14,6 +14,7 @@ import { GoalsComponent } from './goals/goals.component';
 import { MindmapComponent } from './mindmap/mindmap.component';
 
 import { FormsModule } from '@angular/forms';
+import { SpotlightDirective } from './spotlight.directive';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { FormsModule } from '@angular/forms';
     SideNavComponent,
     VersionNotesComponent,
     GoalsComponent,
-    MindmapComponent
+    MindmapComponent,
+    SpotlightDirective
   ],
   imports: [
     BrowserModule,
