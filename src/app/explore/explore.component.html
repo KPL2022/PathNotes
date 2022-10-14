@@ -15,5 +15,8 @@
     <div class="completed-items"></div>
   </div>
 
-  <div class="exp-controls"></div>
+  <div class="exp-controls">
+
+    <input type="text" [(ngModel)]="inputText" class="exp-controls-input" (keyup.enter)="addEntry()">
+  </div>
 </div>

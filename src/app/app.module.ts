@@ -13,6 +13,8 @@ import { provideRouter, withRouterConfig } from '@angular/router';
 import { GoalsComponent } from './goals/goals.component';
 import { MindmapComponent } from './mindmap/mindmap.component';
 
+import { FormsModule } from '@angular/forms';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -28,6 +30,7 @@ import { MindmapComponent } from './mindmap/mindmap.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    FormsModule
   ],
   providers: [
 

@@ -79,4 +79,48 @@ https://stackoverflow.com/questions/56325272/detect-browser-refresh-in-an-angula
 
 38. https://stackoverflow.com/questions/65368420/using-flexlayoutmodule-gives-error-in-angular-11
 
+39. async nature of various angular techniques, interpolation, property binding, important to check assertion make sure data is sure when i ref its container
 
+40. https://stackoverflow.com/questions/66176831/how-can-i-solve-typescript-error-x-has-no-initializer-and-is-not-definitely-as
+
+41. https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetWidth
+
+42. https://angular.io/guide/pipes
+
+43. https://dev.to/matrixersp/how-to-make-an-input-field-grow-shrink-as-you-type-513l
+
+44. https://stackoverflow.com/questions/53675306/how-set-ngmodel-for-span-angular-6
+
+45. https://css-tricks.com/auto-growing-inputs-textareas/
+
+46. https://stackoverflow.com/questions/14618028/remove-borders-around-html-input
+
+47. https://css-tricks.com/snippets/css/typewriter-effect/
+
+48. https://animate.style/
+
+49. https://www.w3schools.com/css/css_form.asp
+
+50. https://stackoverflow.com/questions/38892771/cant-bind-to-ngmodel-since-it-isnt-a-known-property-of-input
+
+51. https://dev.to/sandeepbalachandran/how-to-filter-the-data-with-a-common-search-bar-at-the-top-angular-8-16a
+
+52. https://stackoverflow.com/questions/66788438/how-to-trigger-event-using-enter-key-in-angular
+
+53. https://www.typescripttutorial.net/typescript-tutorial/typescript-inheritance/
+
+54. https://techhelpnotes.com/how-to-define-static-property-in-typescript-interface/
+
+55. https://stackoverflow.com/questions/12702548/constructor-overload-in-typescript
+
+56. https://stackoverflow.com/questions/37791947/how-to-define-a-private-property-when-implementing-an-interface-in-typescript
+
+57. https://coryrylan.com/blog/private-methods-and-properties-in-typescript-classes
+
+58. https://blog.logrocket.com/when-how-use-interfaces-classes-typescript/
+
+59. https://www.javatpoint.com/typescript-class-vs-interface
+
+60. https://stackoverflow.com/questions/40616272/an-import-path-cannot-end-with-ts-nodejs-and-visual-code
+
+61. 

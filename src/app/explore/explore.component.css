@@ -32,6 +32,23 @@
   border-bottom-right-radius: 25px;
 
   flex: 20%;
+
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.exp-controls-input {
+
+  width: 80%;
+  margin: 0 auto;
+
+  font-size: xx-large;
+  border: 0;
+  outline: 0;
+  border-radius: 20px;
+  padding: 10px;
 }
 
 .workshop-panel {

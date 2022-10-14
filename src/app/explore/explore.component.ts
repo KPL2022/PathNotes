@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
+import { ExploreService } from '../explore.service';
+
 @Component({
   selector: 'app-explore',
   templateUrl: './explore.component.html',
@@ -7,9 +9,17 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ExploreComponent implements OnInit {
 
-  constructor() { }
+  inputText: string = '';
+
+  constructor(private expService: ExploreService) { }
 
   ngOnInit(): void {
+  }
+
+  addEntry() {
+
+    this.expService.addEntry(this.inputText, false);
+    this.inputText = '';
   }
 
 }
