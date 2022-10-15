@@ -162,4 +162,21 @@ https://www.w3schools.com/graphics/canvas_drawing.asp
 
 72. https://stackoverflow.com/questions/38571812/how-to-detect-when-an-input-value-changes-in-angular
 
+73. https://angular.io/guide/inputs-outputs#sending-data-to-a-parent-component
+
+74. https://www.concretepage.com/angular-2/angular-2-4-onchanges-simplechanges-example
+
+75. https://stackoverflow.com/questions/38571812/how-to-detect-when-an-input-value-changes-in-angular
+
+76. https://malcoded.com/posts/angular-async-pipe/
+
+77. https://www.google.com/search?q=angular+passing+data+between+component+and+service&oq=angular+passing+data+between+component+and+service&aqs=chrome..69i57j0i22i30l4j0i390l3j69i64.7088j0j7&sourceid=chrome&ie=UTF-8
+
+Should I involve service in component interaction cycle tho, i dont think so
+
+78. https://www.joomlashack.com/blog/tutorials/layering-items-within-css-grid/
+
+79. https://www.smashingmagazine.com/2020/01/understanding-css-grid-lines/
+
+80. https://www.w3schools.com/css/css_grid_container.asp
 

@@ -18,10 +18,13 @@
   grid-column: 4 / 5;
   grid-row: 2 / 3;
 
+  border: 2px solid black;
 }
 
 .mm-ctrls-input {
 
   grid-column: 2 / 3;
   grid-row: 4 / 5;
+
+  border: 2px solid black;
 }

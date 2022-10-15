@@ -11,7 +11,6 @@ export class MmCanvasComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() drawRequest!: string[];
 
   private contxt!: CanvasRenderingContext2D;
-  private canvasReady: boolean = false;
 
   constructor() { 
   }
@@ -21,24 +20,25 @@ export class MmCanvasComponent implements OnInit, AfterViewInit, OnChanges {
 
   ngAfterViewInit(): void {
 
+    this.brd.nativeElement.width = this.brd.nativeElement.offsetWidth;
+    this.brd.nativeElement.height = this.brd.nativeElement.offsetHeight;
+
     this.contxt = this.brd.nativeElement.getContext('2d');
-    this.canvasReady = true;
   }
 
   ngOnChanges(changes: SimpleChanges) {
 
-    if (this.canvasReady) {
-
+    if (!changes['drawRequest'].firstChange) {
       this.interpretCmd(changes['drawRequest'].currentValue);
     }
   }
 
   interpretCmd(userCmd: string[]) {
 
-    this.animate();
+    this.animate(userCmd[0]);
   }
 
-  animate() {
+  animate(userInput: string) {
 
     var fs = "feature services";
     var jr = "journal service";
@@ -48,8 +48,9 @@ export class MmCanvasComponent implements OnInit, AfterViewInit, OnChanges {
     var bk = "backend API";
     var nj = "node.js";
 
-    this.contxt.fillRect(Math.random() * 300, Math.random() * 100, 40, 25);
-    // this.contxt.fillText(fs, 30, 50);
+    this.contxt.fillRect(50, 50, 40, 25);
+    this.contxt.font = "50px Arial";
+    this.contxt.fillText(userInput, Math.random() * 1300, Math.random() * 700);
   }
 
 }
