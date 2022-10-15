@@ -1,3 +1,8 @@
+export class SystemCommand {
+
+  
+}
+
 export interface RecordEntry {
 
   generateRecord(): string;

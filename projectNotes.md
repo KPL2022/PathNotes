@@ -180,3 +180,26 @@ Should I involve service in component interaction cycle tho, i dont think so
 
 80. https://www.w3schools.com/css/css_grid_container.asp
 
+81. offsetWidth/Height of element -> physical dims -> canvas display size vs resolution, resolve with self phys dims
+
+82. https://stackoverflow.com/questions/43111474/how-to-stop-ngonchanges-called-before-ngoninit
+
+83. js lambda functions always bundle with pre-def'ed context, kinda nice ngl
+https://www.w3schools.com/js/js_arrow_function.asp
+
+84. https://levelup.gitconnected.com/simple-application-with-angular-6-node-js-express-2873304fff0f
+
+85. 
+"1. Spring 
+The Spring Framework is one of the most robust and versatile backend frameworks. It contains several different modules that provide programmers with a variety of application tools. This framework uses the concepts of Dependency Injection and Inversion of Control to configure application components in loose couplings, helping to give the application more flexibility in its responses.
+Spring also provides a data access framework that eases many of the difficulties of working with application database, including:"
+
+https://rollbar.com/blog/most-popular-java-backend-frameworks-for-2021/
+
+dont really wanna js all the way with node.js...java backend??
+
+86. https://www.baeldung.com/spring-boot-angular-web
+
+87. https://spring.io/projects/spring-boot
+
+

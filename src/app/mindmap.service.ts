@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 
-
-
 @Injectable({
   providedIn: 'root'
 })
@@ -18,6 +16,8 @@ export class MindmapService {
   parse(userInput: string) {
 
     // TODO: imp
+    
+
     return [userInput];
   }
 }
