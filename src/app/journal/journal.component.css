@@ -1,4 +1,38 @@
 :host {
 
   flex: 100%;
+
+  display: flex;
+
+  margin: 10px;
+}
+
+.tmp-frame {
+
+  flex: 100%;
+
+  border: 10px solid transparent;
+  border-image: url('/assets/tmp_img_border_mats.png') 20% round;
+
+  display: flex;
+
+}
+
+.inner-frame {
+
+  flex: 100%;
+
+  border: 10px solid transparent;
+  border-image: url('/assets/tmp_img_border_mats.png') 20% stretch;
+
+  background-color: rgba(255, 255, 255, 0.35);
+
+  display: flex;
+}
+
+.demo-img {
+
+  flex: 100%;
+
+  object-fit: fill;
 }

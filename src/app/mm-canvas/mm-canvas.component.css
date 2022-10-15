@@ -1,0 +1,17 @@
+:host {
+
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+
+  display: flex;
+}
+
+.canvas-board {
+
+  flex: 100%;
+
+  border: 5px solid rgb(255, 192, 203);
+  border-radius: 25px;
+
+  background-color: rgba(62, 59, 59, 0.718);
+}

@@ -1,1 +1,3 @@
-<p>mindmap works!</p>
+<app-mm-canvas [drawRequest]="canvasQuery" ></app-mm-canvas>
+
+<app-mm-controls (materialize)="parse($event)"></app-mm-controls>

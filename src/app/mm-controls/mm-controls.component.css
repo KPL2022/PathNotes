@@ -1,0 +1,27 @@
+:host {
+
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+
+  z-index: 5;
+
+  display: grid;
+
+  grid-template-columns: 12% 70% 7% 6% 5%;
+  grid-template-rows: 6% 69% 10% 8% 7%;
+}
+
+.mm-ctrls-side {
+
+  background-color: white;
+
+  grid-column: 4 / 5;
+  grid-row: 2 / 3;
+
+}
+
+.mm-ctrls-input {
+
+  grid-column: 2 / 3;
+  grid-row: 4 / 5;
+}

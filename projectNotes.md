@@ -123,4 +123,43 @@ https://stackoverflow.com/questions/56325272/detect-browser-refresh-in-an-angula
 
 60. https://stackoverflow.com/questions/40616272/an-import-path-cannot-end-with-ts-nodejs-and-visual-code
 
-61. 
+61. https://angular.io/guide/attribute-directives
+
+62. https://www.w3schools.com/jsref/event_onfocusout.asp
+
+63. https://stackoverflow.com/questions/63596400/is-there-any-way-to-access-a-local-sql-server-database-in-angular
+
+64. https://www.reddit.com/r/Angular2/comments/j6tll9/which_type_of_database_is_best_for_angular_9/
+
+65. https://www.quora.com/Which-is-the-best-backend-for-Angular-8
+
+66. persistency upgrade cluster:
+
+probs node.js + sqlite
+
+https://www.sqlitetutorial.net/sqlite-nodejs/
+https://www.quora.com/Which-is-the-best-backend-for-Angular-8
+https://www.sqlitetutorial.net/sqlite-commands/
+https://www.sqlitetutorial.net/sqlite-sample-database/
+https://www.sqlitetutorial.net/download-install-sqlite/
+https://www.sqlitetutorial.net/what-is-sqlite/
+https://www.sqlitetutorial.net/
+https://angular.io/guide/http
+
+for now 10/14/22, suspend to get mindmap feature working first, backend is gonna take a bit to spin up
+https://blog.logrocket.com/localstorage-javascript-complete-guide/#webstorageapi
+
+67. https://thinkster.io/tutorials/learn-angular-2
+
+68. never knew what adobe was for, but they have nice icons
+
+69. could map overlay be what i think it is?
+https://www.w3schools.com/graphics/canvas_drawing.asp
+
+70. https://medium.com/angular-in-depth/how-to-get-started-with-canvas-animations-in-angular-2f797257e5b4
+
+71. https://malcoded.com/posts/angular-async-pipe/
+
+72. https://stackoverflow.com/questions/38571812/how-to-detect-when-an-input-value-changes-in-angular
+
+

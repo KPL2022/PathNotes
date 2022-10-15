@@ -1,0 +1,13 @@
+:host {
+
+  flex: 100%;
+
+  border-radius: 25px;
+  margin: 10px;
+
+  display: grid;
+
+  grid-template-columns: 100%;
+  grid-template-rows: 100%;
+}
+

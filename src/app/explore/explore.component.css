@@ -3,6 +3,10 @@
   flex: 100%;
 
   display: flex;
+
+  background-color: rgba(255, 255, 255, 0.35);
+  border-radius: 25px;
+  margin: 10px;
 }
 
 .exp-outer-frame {
@@ -93,28 +97,89 @@
 
 .entry-item, .edit-input {
 
-  font-size: xx-large;
+  flex: 0 0 85%;
+
+  font-size: x-large;
   border: 0;
-  border-radius: 25px;
-  color: rgba(0, 0, 0, 0.878);
-  background-color: rgba(255, 255, 255, 0.815);
-  padding: 10px;
   outline: 0;
-  margin: 5px 0;
+
+  color: rgba(0, 0, 0, 0.878);
+}
+
+.li-contxt-wrapper {
+
+  border-radius: 25px;
+  background-color: rgba(255, 255, 255, 0.844);
+  padding: 10px 5px;
   width: 90%;
+
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
 }
 
 .tog-btn {
+
+  flex: 0 0 10%;
 
   background-image: url('/assets/flaticon/entry_incomp.png');
   background-repeat: no-repeat;
   background-size: contain;
 
-  padding: 20px;
+  margin-left: 5px;
+  border: 0;
+ 
+  cursor: pointer;
+
+  background-color: transparent;
 }
 
-.fin-icon {
+li {
 
-  width: 15%;
-  height: 15%;
+  margin: 3px 0;
+}
+
+ul {
+
+  list-style-type: none;
+}
+
+.comp-li-contxt-wrapper {
+
+  border-radius: 25px;
+  background-color: rgba(255, 255, 255, 0.844);
+  padding: 5px 5px;
+  width: 90%;
+
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+}
+
+.comp-icon {
+
+  flex: 0 0 15%;
+
+  background-image: url("/assets/flaticon/entry_comp.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.comp-btn {
+
+  flex: 0 0 10%;
+  margin-left: auto;
+  border: 0;
+  cursor: pointer;
+
+  background-color: transparent;
+}
+
+.comp-txt {
+
+  flex: 0 0 70%;
+
+  color: rgba(0, 0, 0, 0.878);
+
+  font-size: x-large;
 }

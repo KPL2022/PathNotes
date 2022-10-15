@@ -19,17 +19,19 @@
 
               <li>
 
-                <button type="button" class="tog-btn" (click)="toggleEntry(entry)"></button>
+                <span class="li-contxt-wrapper">
+                  <button type="button" class="tog-btn" (click)="toggleEntry(entry)"></button>
 
-                <ng-container *ngIf="!entry.isOpenForEdit()">
-
-                  <span class="entry-item" (click)="requestEdit(entry)">{{ entry.getText() }}</span>
-                </ng-container>
-
-                <ng-container *ngIf="entry.isOpenForEdit()">
-
-                  <input spotlight type="text" class="edit-input" [value]="entry.getText()" (keydown.enter)="editEntry(entry, $event)" (blur)="editEntry(entry, $event)">
-                </ng-container>
+                  <ng-container *ngIf="!entry.isOpenForEdit()">
+  
+                    <span class="entry-item" (click)="requestEdit(entry)">{{ entry.getText() }}</span>
+                  </ng-container>
+  
+                  <ng-container *ngIf="entry.isOpenForEdit()">
+  
+                    <input spotlight type="text" class="edit-input" [value]="entry.getText()" (keydown.enter)="editEntry(entry, $event)" (blur)="editEntry(entry, $event)">
+                  </ng-container>
+                </span>
               </li>
             </ng-container>
           </ng-container>
@@ -47,11 +49,14 @@
 
             <li>
   
-              <img src="/assets/flaticon/entry_comp.png" class="fin-icon">
-  
-              <span>{{ entry.getText() }}</span>
+              <span class="comp-li-contxt-wrapper">
 
-              <button type="button" (click)="removeEntry(entry)">X</button>
+                <span class="comp-icon"></span>
+  
+                <div class="comp-txt">{{ entry.getText() }}</div>
+  
+                <button class="comp-btn" type="button" (click)="removeEntry(entry)">X</button>
+              </span>
             </li>
           </ng-container>
         </ng-container>
