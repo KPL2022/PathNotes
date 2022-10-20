@@ -202,4 +202,9 @@ dont really wanna js all the way with node.js...java backend??
 
 87. https://spring.io/projects/spring-boot
 
+88. roadmaps are a lil scary sometimes, ones from self and external, but also helpful
+https://roadmap.sh/backend
+
+89. https://stackoverflow.com/questions/5882716/html5-canvas-vs-svg-vs-div
+
 

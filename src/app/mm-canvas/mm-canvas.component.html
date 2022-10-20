@@ -1,2 +1,17 @@
-<canvas #board class="canvas-board"></canvas>
+<!-- <canvas #board class="canvas-board"></canvas>
+ -->
 
+<div class="mm-grid">
+
+  <svg:svg height="700" width="1300" style="border: 3px solid black">
+
+    <ng-container *ngFor="let bubble of bubbles">
+
+      <ellipse [attr.cx]="bubble.getCx()" [attr.cy]="bubble.getCy()" rx="75" ry="37" style="fill:yellow;stroke:purple;stroke-width:2" />
+      
+      <text [attr.x]="bubble.getCx() - 60"[attr.y]="bubble.getCy() + 10" style="font-size: xx-large">
+        {{ bubble.getTxt() }}
+      </text>
+    </ng-container>
+  </svg>
+</div>

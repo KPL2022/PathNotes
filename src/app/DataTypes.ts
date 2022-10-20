@@ -3,6 +3,50 @@ export class SystemCommand {
   
 }
 
+export class MmNode {
+
+  private cx: number;
+  private cy: number;
+  private txt: string;
+
+  constructor(x: number, y: number, txt: string) {
+
+    this.cx = x;
+    this.cy = y;
+    this.txt = txt;
+  }
+
+  getCx() {
+
+    return this.cx;
+  }
+
+  getCy() {
+
+    return this.cy;
+  }
+
+  getTxt() {
+
+    return this.txt;
+  }
+
+  setCx(newX: number) {
+
+    this.cx = newX;
+  }
+
+  setCy(newY: number) {
+
+    this.cy = newY;
+  }
+
+  setTxt(newTxt: string) {
+
+    this.txt = newTxt;
+  }
+}
+
 export interface RecordEntry {
 
   generateRecord(): string;
