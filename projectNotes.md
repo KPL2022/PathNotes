@@ -207,4 +207,16 @@ https://roadmap.sh/backend
 
 89. https://stackoverflow.com/questions/5882716/html5-canvas-vs-svg-vs-div
 
+90. https://developer.mozilla.org/en-US/docs/Web/SVG/Namespaces_Crash_Course
 
+91. https://developer.mozilla.org/en-US/docs/Web/SVG/Element/text
+
+92. https://stackoverflow.com/questions/68181533/angular-12-doesnt-render-svg-component
+
+93. https://stackoverflow.com/questions/38306363/svg-circle-cant-bind-to-cx-since-it-isnt-a-known-native-property
+
+94. https://www.w3schools.com/graphics/tryit.asp?filename=trysvg_ellipse
+
+95. https://www.w3schools.com/graphics/svg_ellipse.asp
+
+96. 

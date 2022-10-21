@@ -8,12 +8,14 @@ export class MmNode {
   private cx: number;
   private cy: number;
   private txt: string;
+  private id: string;
 
-  constructor(x: number, y: number, txt: string) {
+  constructor(x: number, y: number, txt: string, id: string) {
 
     this.cx = x;
     this.cy = y;
     this.txt = txt;
+    this.id = id;
   }
 
   getCx() {
@@ -31,6 +33,11 @@ export class MmNode {
     return this.txt;
   }
 
+  getId() {
+
+    return this.id;
+  }
+
   setCx(newX: number) {
 
     this.cx = newX;
@@ -44,6 +51,16 @@ export class MmNode {
   setTxt(newTxt: string) {
 
     this.txt = newTxt;
+  }
+
+  setId(newId: string) {
+
+    this.id = newId;
+  }
+
+  contains(point: number[]) {
+
+    return Math.abs(point[0] - this.cx) < 75 && Math.abs(point[1] - this.cy) < 37;
   }
 }
 
