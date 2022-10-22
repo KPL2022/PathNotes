@@ -12,7 +12,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   @Input() drawRequest!: string[];
 
   activeNodes: MmNode[] = [];
-  nodeOrigin: MmBlock[] = [];
+  nodeOrigin: MmBlock[][] = [];
   ids: number = 0;
 
   constructor() { 
@@ -35,7 +35,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     for (var i = 0; i < Math.floor(frameHeight / rowSize); i++) {
 
-      this.nodeOrigin.push(new MmBlock(0, frameWidth, rowSize, i));
+      this.nodeOrigin.push([new MmBlock(0, frameWidth, rowSize, i)]);
     }
 
     // for (var i = 0; i < Math.floor(frameWidth / colSize); i++) {
@@ -70,7 +70,83 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     //   this.activateNode('test');
     // }
 
-    
+    this.generateNode(userCmd[0]);
+  }
+
+  generateNode(userInput: string) {
+
+    var nodeCore: number[] = this.allocSpace('node');
+
+    this.activeNodes.push(new MmNode(nodeCore[0], nodeCore[1], userInput, String(this.ids++)));
+  }
+
+  allocSpace(purpose: string) {
+
+    var a = 75;
+    var margin = 10;
+    var nodeWidth = 2 * a + margin;
+
+    // ignore purpose param for now, assume alloc for node
+    var pickRow!: MmBlock[];
+    var foundRow = false;
+
+    var chosenBlock!: MmBlock;
+    var foundBlock = false;
+
+    while (!foundRow) {
+
+      var rowId = Math.floor(Math.random() * this.nodeOrigin.length);
+
+      for (var i = 0; i < this.nodeOrigin[rowId].length && !foundBlock; i++) {
+
+        var block = this.nodeOrigin[rowId][i];
+  
+        if (block.getEnd() - block.getStart() >= nodeWidth) {
+  
+          chosenBlock = block;
+          foundBlock = true;
+        }
+      }
+
+      if (foundBlock) {
+
+        pickRow = this.nodeOrigin[rowId];
+        foundRow = true;
+      }
+    }
+
+    if (foundBlock) {
+
+      var blockSize = chosenBlock.getEnd() - chosenBlock.getStart();
+      var nodePosition = 0;
+
+      if (blockSize > nodeWidth) {
+
+        var nodeSizeContainerCount = Math.floor(blockSize / nodeWidth);
+
+        nodePosition = Math.floor(Math.random() * nodeSizeContainerCount);
+      }
+
+      var nodeCore = [];
+      nodeCore[0] = chosenBlock.getStart() + nodeWidth * nodePosition + Math.floor(nodeWidth / 2);
+      nodeCore[1] = chosenBlock.blockId * chosenBlock.dispHeight + Math.floor(chosenBlock.dispHeight / 2);
+
+      if (blockSize === nodeWidth || nodePosition === 0) {
+
+        chosenBlock.setStart(chosenBlock.getStart() + nodeWidth);
+      } else {
+
+        var splitBlock = new MmBlock(chosenBlock.getStart(), chosenBlock.getStart() + nodeWidth * nodePosition, chosenBlock.dispHeight, chosenBlock.blockId);
+        chosenBlock.setStart(chosenBlock.getStart() + nodeWidth * (nodePosition + 1));
+
+        pickRow.splice(pickRow.indexOf(chosenBlock), 0, splitBlock);
+      }
+
+      return nodeCore;
+    } else {
+
+      return [0, 0];
+    }
   }
 
   // activateNode(userInput: string) {

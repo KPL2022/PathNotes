@@ -14,9 +14,12 @@
       </text>
     </ng-container>
 
-    <ng-container *ngFor="let block of nodeOrigin">
+    <ng-container *ngFor="let blockChain of nodeOrigin">
 
-      <rect [attr.x]="block.getStart()" [attr.y]="block.blockId * block.dispHeight" [attr.width]="block.getEnd() - block.getStart()" [attr.height]="block.dispHeight" style="fill:rgba(185, 115, 3, 0.648);stroke-width:3;stroke:rgb(0,0,0)" />
+      <ng-container *ngFor="let block of blockChain">
+
+        <rect [attr.x]="block.getStart()" [attr.y]="block.blockId * block.dispHeight" [attr.width]="block.getEnd() - block.getStart()" [attr.height]="block.dispHeight" style="fill:rgba(185, 115, 3, 0.648);stroke-width:3;stroke:rgb(0,0,0)" />
+      </ng-container>
     </ng-container>
   </svg>
 </div>
