@@ -3,6 +3,42 @@ export class SystemCommand {
   
 }
 
+export class MmBlock {
+
+  private st: number;
+  private ed: number;
+  public dispHeight: number;
+  public blockId: number;
+
+  constructor(st: number, ed: number, dispHeight: number, blockId: number) {
+
+    this.st = st;
+    this.ed = ed;
+    this.dispHeight = dispHeight;
+    this.blockId = blockId;
+  }
+
+  getStart() {
+
+    return this.st;
+  }
+
+  getEnd() {
+
+    return this.ed;
+  }
+
+  setStart(newSt: number) {
+
+    this.st = newSt;
+  }
+
+  setEnd(newEd: number) {
+
+    this.ed = newEd;
+  }
+}
+
 export class MmNode {
 
   private cx: number;

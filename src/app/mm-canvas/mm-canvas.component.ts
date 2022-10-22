@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges, ApplicationRef } from '@angular/core';
 
-import { MmNode } from '../DataTypes';
+import { MmBlock, MmNode } from '../DataTypes';
 
 @Component({
   selector: 'app-mm-canvas',
@@ -12,7 +12,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   @Input() drawRequest!: string[];
 
   activeNodes: MmNode[] = [];
-  nodeOrigin: MmNode[] = [];
+  nodeOrigin: MmBlock[] = [];
   ids: number = 0;
 
   constructor() { 
@@ -33,16 +33,21 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     var frameWidth = 1300;
     var frameHeight = 700;
 
-    for (var i = 0; i < Math.floor(frameWidth / colSize); i++) {
+    for (var i = 0; i < Math.floor(frameHeight / rowSize); i++) {
 
-      for (var j = 0; j < Math.floor(frameHeight / rowSize); j++) {
-
-        var x = i * colSize + Math.floor(colSize / 2);
-        var y = j * rowSize + Math.floor(rowSize / 2);
-
-        this.nodeOrigin.push(new MmNode(x, y, '', '-1'));
-      }
+      this.nodeOrigin.push(new MmBlock(0, frameWidth, rowSize, i));
     }
+
+    // for (var i = 0; i < Math.floor(frameWidth / colSize); i++) {
+
+    //   for (var j = 0; j < Math.floor(frameHeight / rowSize); j++) {
+
+    //     var x = i * colSize + Math.floor(colSize / 2);
+    //     var y = j * rowSize + Math.floor(rowSize / 2);
+
+    //     this.nodeOrigin.push(new MmNode(x, y, '', '-1'));
+    //   }
+    // }
   }
 
   ngOnInit(): void {
@@ -60,23 +65,25 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     // TODO: imp
     // this.collisionAwarePlacement(userCmd[0]);
     
-    while (this.nodeOrigin.length !== 0) {
+    // while (this.nodeOrigin.length !== 0) {
 
-      this.activateNode('test');
-    }
+    //   this.activateNode('test');
+    // }
+
+    
   }
 
-  activateNode(userInput: string) {
+  // activateNode(userInput: string) {
 
-    var baseNode: MmNode = this.nodeOrigin[Math.floor(Math.random() * this.nodeOrigin.length)];
+  //   var baseNode: MmNode = this.nodeOrigin[Math.floor(Math.random() * this.nodeOrigin.length)];
   
-    this.nodeOrigin.splice(this.nodeOrigin.indexOf(baseNode), 1);
+  //   this.nodeOrigin.splice(this.nodeOrigin.indexOf(baseNode), 1);
 
-    baseNode.setTxt(userInput);
-    baseNode.setId(String(this.ids++));
+  //   baseNode.setTxt(userInput);
+  //   baseNode.setId(String(this.ids++));
 
-    this.activeNodes.push(baseNode);
-  }
+  //   this.activeNodes.push(baseNode);
+  // }
 
   // collisionAwarePlacement(userInput: string) {
 
