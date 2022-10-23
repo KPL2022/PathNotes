@@ -1,6 +1,66 @@
+export class TrieNode {
+
+  val: string;
+  next: TrieNode[];
+  isCommand: boolean;
+  commandInfo: CommandDef | null;
+
+  constructor(val: string, isCommand: boolean, commandInfo: CommandDef | null) {
+
+    this.val = val;
+    this.next = [];
+    this.isCommand = isCommand;
+    this.commandInfo = commandInfo;
+  }
+
+  append(child: TrieNode) {
+
+    this.next.push(child);
+  }
+}
+
+export interface CommandDef {
+
+  name: string;
+  symbol: string;
+  type: string;
+  options: OptionDef[];
+}
+
+export interface OptionDef {
+
+  name: string;
+  default: string;
+  values: string[];
+}
+
 export class SystemCommand {
 
-  
+  private operatorName: string;
+  private baseOpt: boolean;
+  private operands: string | string[] | SystemCommand[];
+
+  constructor(optName: string, baseOpt: boolean, operands: string | string[] | SystemCommand[]) {
+
+    this.operatorName = optName;
+    this.baseOpt = baseOpt;
+    this.operands = operands;
+  }
+
+  getOperatorName() {
+
+    return this.operatorName;
+  }
+
+  isBaseOpt() {
+
+    return this.baseOpt;
+  }
+
+  getOperands() {
+
+    return this.operands;
+  }
 }
 
 export class MmBlock {

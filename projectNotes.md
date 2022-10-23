@@ -219,4 +219,12 @@ https://roadmap.sh/backend
 
 95. https://www.w3schools.com/graphics/svg_ellipse.asp
 
-96. 
+96. 'promises' vs 'observables'?
+
+97. I like this thought process. Complexity requires justification.
+
+"This is all that is required for a correctly working approach, but there are a number of other things you might need to take into account if this approach performs too slowly. I recommend implementing the simple approach, and once it works correctly you can make gradual improvements if it is not sufficiently smooth and responsive (this may not be necessary unless you have a large number of rectangles or restrictive hardware/software)."
+
+https://computergraphics.stackexchange.com/questions/5302/how-can-i-verify-if-a-selection-area-is-over-a-shape-in-svg
+
+98. 

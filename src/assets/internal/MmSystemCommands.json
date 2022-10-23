@@ -1,0 +1,96 @@
+[
+  {
+    "name": "meta-info",
+    "symbol": "",
+    "type": "",
+    "options": [
+      {
+        "name": "default",
+        "default": "generate",
+        "values": ["generate"]
+      },
+      {
+        "name": "option-symbol",
+        "default": "--",
+        "values": ["--"]
+      }
+    ]
+  },
+  {
+    "name": "link",
+    "symbol": "->",
+    "type": "binary",
+    "options": [
+      {
+        "name": "link angle",
+        "default": "tl",
+        "values": ["tl", "tr", "bl", "br"]
+      },
+      {
+        "name": "link type",
+        "default": "uni",
+        "values": ["uni", "bi", "eq"]
+      }
+    ]
+  },
+  {
+    "name": "unlink",
+    "symbol": "-x",
+    "type": "binary",
+    "options": [
+      {
+        "name": "scope",
+        "default": "branch",
+        "values": ["node", "branch"]
+      }
+    ]
+  },
+  {
+    "name": "generate",
+    "symbol": "-g",
+    "type": "unary",
+    "options": [
+      {
+        "name": "type",
+        "default": "node",
+        "values": ["node", "splitter"]
+      }
+    ]
+  },
+  {
+    "name": "remove",
+    "symbol": "~",
+    "type": "unary",
+    "options": [
+      {
+        "name": "scope",
+        "default": "node",
+        "values": ["node", "branch"]
+      }
+    ]
+  },
+  {
+    "name": "edit",
+    "symbol": "=",
+    "type": "binary",
+    "options": [
+      {
+        "name": "attr",
+        "default": "text",
+        "values": ["text", "link angle", "link type"]
+      }
+    ]
+  },
+  {
+    "name": "merge",
+    "symbol": "+",
+    "type": "binary",
+    "options": []
+  },
+  {
+    "name": "highlight",
+    "symbol": "^",
+    "type": "alias emp str delin n-nary",
+    "options": []
+  }
+]
