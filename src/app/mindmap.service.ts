@@ -70,7 +70,7 @@ export class MindmapService {
         // else, create and navigate substr
 
       var nxtChar = src.substring(0, 1);
-      var nextNode = rt.next.find((nd: TrieNode) => {nd.val === nxtChar});
+      var nextNode = rt.next.find((nd: TrieNode) => nd.val === nxtChar);
 
       if (nextNode === undefined) {
 
@@ -96,9 +96,9 @@ export class MindmapService {
     return this.buildExecutionTree(this.symPrefRoot, userInput);
   }
 
-  // TODO: resolve the data structure support issues around this method
-  // how would the interpreter unwrap the ExecutionTree obj?
-  buildExecutionTree(rt: TrieNode, src: string) {
+  // TODO: imp order of operations by hierarchy
+  // set root to be highest operator found in user input, split from there 
+  buildExecutionTree(rt: TrieNode, src: string): SystemCommand | string {
 
     var cmdDef: CommandDef | null = null;
     var idx = -1;
@@ -110,17 +110,17 @@ export class MindmapService {
 
         // mark cmd
         cmdDef = curNode.commandInfo;
-        idx = i + 1;
+        idx = i;
       } else {
 
         var nxtChar = src.charAt(i);
-        var nextNode = curNode.next.find((nd: TrieNode) => {nd.val === nxtChar});
+        var nextNode = curNode.next.find((nd: TrieNode) => nd.val === nxtChar);
 
         if (nextNode === undefined) {
 
           curNode = rt;
 
-          nextNode = curNode.next.find((nd: TrieNode) => {nd.val === nxtChar});
+          nextNode = curNode.next.find((nd: TrieNode) => nd.val === nxtChar);
 
           if (nextNode !== undefined) {
 
@@ -140,15 +140,17 @@ export class MindmapService {
     } else {
 
       var optName = cmdDef.name;
-      var isBaseOpt!: boolean;
+      var isBaseOpt: boolean = false;
       var operands!: string | string[] | SystemCommand[] | any[];
       var tmpOperands = [];
 
       // found cmd, case on cmd type unary or binary
       if (cmdDef.type === 'binary') {
 
-        tmpOperands.push(this.buildExecutionTree(rt, src.substring(0, idx - cmdDef.symbol.length)));
-        tmpOperands.push(this.buildExecutionTree(rt, src.substring(idx)));
+        tmpOperands.push(this.buildExecutionTree(rt, src.substring(0, idx - cmdDef.symbol.length).trim()));
+        tmpOperands.push(this.buildExecutionTree(rt, src.substring(idx).trim()));
+
+        operands = tmpOperands;
 
         if (typeof tmpOperands[0] === "string" && typeof tmpOperands[1] === "string") {
 
@@ -158,6 +160,8 @@ export class MindmapService {
 
         // assert type === 'unary'
         tmpOperands.push(this.buildExecutionTree(rt, src.substring(idx)));
+        
+        operands = tmpOperands;
 
         if (typeof tmpOperands[0] === "string") {
 

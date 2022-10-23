@@ -9,7 +9,7 @@ import { MmBlock, MmNode, SystemCommand } from '../DataTypes';
 })
 export class MmCanvasComponent implements OnInit, OnChanges {
 
-  @Input() drawRequest!: SystemCommand;
+  @Input() drawRequest!: SystemCommand | string;
 
   activeNodes: MmNode[] = [];
   nodeOrigin: MmBlock[][] = [];
@@ -60,7 +60,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     }
   }
 
-  interpretCmd(userCmd: string[]) {
+  interpretCmd(sysCmd: SystemCommand | string) {
 
     // TODO: imp
     // this.collisionAwarePlacement(userCmd[0]);
@@ -70,7 +70,14 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     //   this.activateNode('test');
     // }
 
-    this.generateNode(userCmd[0]);
+    if (typeof sysCmd === "string") {
+
+      console.log("canvas got string: " + sysCmd);
+    } else {
+
+      console.log("canvas got a syscmd obj: ");
+      console.log(sysCmd);
+    }
   }
 
   generateNode(userInput: string) {
