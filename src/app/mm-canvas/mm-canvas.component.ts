@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges, ApplicationRef } from '@angular/core';
 
-import { MmBlock, MmNode } from '../DataTypes';
+import { MmBlock, MmNode, SystemCommand } from '../DataTypes';
 
 @Component({
   selector: 'app-mm-canvas',
@@ -9,7 +9,7 @@ import { MmBlock, MmNode } from '../DataTypes';
 })
 export class MmCanvasComponent implements OnInit, OnChanges {
 
-  @Input() drawRequest!: string[];
+  @Input() drawRequest!: SystemCommand;
 
   activeNodes: MmNode[] = [];
   nodeOrigin: MmBlock[][] = [];

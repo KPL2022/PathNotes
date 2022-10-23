@@ -10,10 +10,10 @@ import { CommandDef, OptionDef, SystemCommand, TrieNode } from './DataTypes';
 export class MindmapService {
 
   private symbolSrc = "/assets/internal/MmSystemCommands.json";
-  private symPrefRoot!: TrieNode;
-  private defaultOpt!: string;
-  private extraOptsMarker!: string;
+  private extraOptsMarker = "--";
 
+  private symPrefRoot!: TrieNode;
+  
   constructor(private http: HttpClient) {
 
     this.loadSymbols();
@@ -46,16 +46,7 @@ export class MindmapService {
 
     for (var i = 0; i < symbols.length; i++) {
 
-      var cmdDef = symbols[i];
-
-      if (cmdDef.name === 'meta-info') {
-
-        this.defaultOpt = cmdDef.options[0].default;
-        this.extraOptsMarker = cmdDef.options[1].default;
-      } else {
-
-        this.trieInsert(this.symPrefRoot, cmdDef.symbol, cmdDef);
-      }
+      this.trieInsert(this.symPrefRoot, symbols[i].symbol, symbols[i]);
     }
 
     // console.log(this.defaultOpt);
@@ -79,7 +70,7 @@ export class MindmapService {
         // else, create and navigate substr
 
       var nxtChar = src.substring(0, 1);
-      var nextNode = rt.next.find((nd: TrieNode) => {nd.val === nxtChar;});
+      var nextNode = rt.next.find((nd: TrieNode) => {nd.val === nxtChar});
 
       if (nextNode === undefined) {
 
@@ -100,27 +91,81 @@ export class MindmapService {
   parse(userInput: string) {
 
     // TODO: imp
-    return [userInput];
+    // return [userInput];
 
-    // return this.buildExecutionTree(this.symPrefRoot, userInput);
+    return this.buildExecutionTree(this.symPrefRoot, userInput);
   }
 
   // TODO: resolve the data structure support issues around this method
   // how would the interpreter unwrap the ExecutionTree obj?
   buildExecutionTree(rt: TrieNode, src: string) {
 
-    var exeTreeRt!: SystemCommand;
-    var cur = rt;
+    var cmdDef: CommandDef | null = null;
+    var idx = -1;
+    var curNode = rt;
 
-    for (var i = 0; i < src.length; i++) {
+    for (var i = 0; i < src.length && cmdDef === null; i++) {
 
-      if (cur.next.length === 0) {
+      if (curNode.next.length === 0) {
 
-        // var cmdDef: CommandDef = cur.commandInfo;
-        
+        // mark cmd
+        cmdDef = curNode.commandInfo;
+        idx = i + 1;
+      } else {
 
-        // exeTreeRt = new SystemCommand(cmdDef.name, false, )
+        var nxtChar = src.charAt(i);
+        var nextNode = curNode.next.find((nd: TrieNode) => {nd.val === nxtChar});
+
+        if (nextNode === undefined) {
+
+          curNode = rt;
+
+          nextNode = curNode.next.find((nd: TrieNode) => {nd.val === nxtChar});
+
+          if (nextNode !== undefined) {
+
+            curNode = nextNode;
+          }
+        } else {
+
+          curNode = nextNode;
+        }
       }
+    }
+
+    if (cmdDef === null) {
+
+      // base case, return string given as operand for parent
+      return src;
+    } else {
+
+      var optName = cmdDef.name;
+      var isBaseOpt!: boolean;
+      var operands!: string | string[] | SystemCommand[] | any[];
+      var tmpOperands = [];
+
+      // found cmd, case on cmd type unary or binary
+      if (cmdDef.type === 'binary') {
+
+        tmpOperands.push(this.buildExecutionTree(rt, src.substring(0, idx - cmdDef.symbol.length)));
+        tmpOperands.push(this.buildExecutionTree(rt, src.substring(idx)));
+
+        if (typeof tmpOperands[0] === "string" && typeof tmpOperands[1] === "string") {
+
+          isBaseOpt = true;
+        }
+      } else {
+
+        // assert type === 'unary'
+        tmpOperands.push(this.buildExecutionTree(rt, src.substring(idx)));
+
+        if (typeof tmpOperands[0] === "string") {
+
+          isBaseOpt = true;
+        }
+      }
+
+      return new SystemCommand(optName, isBaseOpt, operands);
     }
   }
 }

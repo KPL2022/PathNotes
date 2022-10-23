@@ -227,4 +227,26 @@ https://roadmap.sh/backend
 
 https://computergraphics.stackexchange.com/questions/5302/how-can-i-verify-if-a-selection-area-is-over-a-shape-in-svg
 
-98. 
+98. https://www.typescriptlang.org/docs/handbook/enums.html
+
+99. https://www.angularjswiki.com/angular/how-to-read-local-json-files-in-angular/
+
+100. https://www.w3schools.com/js/js_json_parse.asp
+
+101. https://rxjs.dev/api/index/function/lastValueFrom
+
+102. https://en.wikipedia.org/wiki/Space_partitioning#In_computer_graphics
+
+103. https://en.wikipedia.org/wiki/Binary_space_partitioning
+
+104. https://en.wikipedia.org/wiki/K-d_tree
+
+105. https://en.wikipedia.org/wiki/Collision_detection
+
+106. https://angular.io/guide/http#typed-response
+
+107. https://stackoverflow.com/questions/17256182/what-is-the-difference-between-string-primitives-and-string-objects-in-javascrip
+
+108. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+
+

@@ -1,22 +1,5 @@
 [
   {
-    "name": "meta-info",
-    "symbol": "",
-    "type": "",
-    "options": [
-      {
-        "name": "default",
-        "default": "generate",
-        "values": ["generate"]
-      },
-      {
-        "name": "option-symbol",
-        "default": "--",
-        "values": ["--"]
-      }
-    ]
-  },
-  {
     "name": "link",
     "symbol": "->",
     "type": "binary",
@@ -42,18 +25,6 @@
         "name": "scope",
         "default": "branch",
         "values": ["node", "branch"]
-      }
-    ]
-  },
-  {
-    "name": "generate",
-    "symbol": "-g",
-    "type": "unary",
-    "options": [
-      {
-        "name": "type",
-        "default": "node",
-        "values": ["node", "splitter"]
       }
     ]
   },
@@ -90,7 +61,7 @@
   {
     "name": "highlight",
     "symbol": "^",
-    "type": "alias emp str delin n-nary",
+    "type": "unary",
     "options": []
   }
 ]
