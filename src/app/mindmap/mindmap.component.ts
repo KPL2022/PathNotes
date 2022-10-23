@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { SystemCommand } from '../DataTypes';
 
 import { MindmapService } from '../mindmap.service';
 
@@ -9,7 +10,7 @@ import { MindmapService } from '../mindmap.service';
 })
 export class MindmapComponent implements OnInit {
 
-  canvasQuery!: string[];
+  canvasQuery!: SystemCommand;
 
   constructor(private mmCore: MindmapService) { }
 
