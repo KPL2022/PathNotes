@@ -97,7 +97,8 @@ export class MindmapService {
   }
 
   // TODO: imp order of operations by hierarchy
-  // set root to be highest operator found in user input, split from there 
+  // set root to be highest operator found in user input, split from there
+  // keep partial order state, restore order after introducing new operator at each encounter 
   buildExecutionTree(rt: TrieNode, src: string): SystemCommand | string {
 
     var cmdDef: CommandDef | null = null;

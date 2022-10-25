@@ -249,4 +249,35 @@ https://computergraphics.stackexchange.com/questions/5302/how-can-i-verify-if-a-
 
 108. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
 
+109. https://www.youtube.com/watch?v=eED4bSkYCB8
+  - bounding volumne hierarchy
+  - binary space partitioning
+    - k-d trees
+    - generic
+  - basic grid
+  - Separating Axis Theorem
+    - projection heuristic for optimization
+  - spatial awareness
+    - contextful vs contextless algos
+  - static vs dynamic environments
+  - collision free placement vs collision detection
+  - space usage efficiency 
+  - homogeneous vs heterogeneous atomic units
+  - sizing of atomic units
+  - free vs occupied block separation idea
+  - cell awareness of occupant
+  - assertions
+  - broad scope collision detection
+  - radial search for sufficiently large containers
+  - composing super size containers
+  - ahhhhhhhhhhhhhhhhh *head explodes
 
+110. TODO: the on change detection from mm-frame -> mm-canvas is annoying when input is the same string, resolve this
+
+111. https://www.w3.org/TR/SVG/paths.html
+
+112. https://www.google.com/search?q=angular+input+emit+same+string&oq=angular+input+emit+same+string&aqs=chrome..69i57j69i64.4360j0j7&sourceid=chrome&ie=UTF-8
+
+113. https://stackoverflow.com/questions/12030686/html-input-file-selection-event-not-firing-upon-selecting-the-same-file
+
+114. 

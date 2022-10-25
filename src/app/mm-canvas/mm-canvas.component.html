@@ -3,22 +3,38 @@
 
 <div class="mm-grid">
 
-  <svg:svg height="700" width="1300" style="border: 3px solid black">
+  <svg:svg class="svg-frame" style="border: 3px solid black">
 
     <ng-container *ngFor="let node of activeNodes">
 
-      <ellipse [attr.cx]="node.getCx()" [attr.cy]="node.getCy()" rx="75" ry="37" style="fill:yellow;stroke:purple;stroke-width:2" />
+      <ellipse [attr.cx]="node.getCx()" [attr.cy]="node.getCy()" rx="45" ry="32" style="fill:yellow;stroke:purple;stroke-width:2" />
       
-      <text [attr.x]="node.getCx() - 60"[attr.y]="node.getCy() + 10" style="font-size: xx-large">
+      <text [attr.x]="node.getCx() - 60"[attr.y]="node.getCy() + 10" style="font-size: x-large">
         {{ node.getId() + ": " + node.getTxt() }}
       </text>
     </ng-container>
+
+    <ng-container *ngFor="let link of activeLinks">
+
+      <path [attr.d]="'M' + link.getStStr() + ' C' + link.getStAnStr() + ' ' + link.getEdAnStr() + ' ' + link.getEdStr()" fill="none" stroke="red" stroke-width="5" />
+    </ng-container>
+
+    <!-- <path d="M600,350 l 50,-25
+    a25,25 -30 0,1 50,-25 l 50,-25
+    a25,50 -30 0,1 50,-25 l 50,-25
+    a25,75 -30 0,1 50,-25 l 50,-25
+    a25,100 -30 0,1 50,-25 l 50,-25" fill="none" stroke="red" stroke-width="5" /> -->
+    
+    <!-- <path d="M100,200 C200,100 600,100 600,200" fill="none" stroke="red" stroke-width="5"/> -->
 
     <ng-container *ngFor="let blockChain of nodeOrigin">
 
       <ng-container *ngFor="let block of blockChain">
 
-        <rect [attr.x]="block.getStart()" [attr.y]="block.blockId * block.dispHeight" [attr.width]="block.getEnd() - block.getStart()" [attr.height]="block.dispHeight" style="fill:rgba(185, 115, 3, 0.648);stroke-width:3;stroke:rgb(0,0,0)" />
+        <ng-container *ngIf="block.isFree">
+
+          <rect [attr.x]="block.getStart()" [attr.y]="block.blockId * block.dispHeight" [attr.width]="block.getEnd() - block.getStart()" [attr.height]="block.dispHeight" style="fill:rgba(185, 115, 3, 0.648);stroke-width:1;stroke:rgb(0,0,0)" />
+        </ng-container>
       </ng-container>
     </ng-container>
   </svg>

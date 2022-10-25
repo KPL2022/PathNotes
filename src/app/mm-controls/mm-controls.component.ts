@@ -9,7 +9,7 @@ import { MindmapService } from '../mindmap.service';
 })
 export class MmControlsComponent implements OnInit {
 
-  userExpression!: string;
+  userExpression: string | undefined;
   @Output() materialize = new EventEmitter<string>();
 
   constructor(private mmCore: MindmapService) { }
@@ -19,13 +19,20 @@ export class MmControlsComponent implements OnInit {
 
   autoComplete() {
 
-    this.userExpression = this.mmCore.format(this.userExpression);
+    if (typeof this.userExpression === "string") {
+
+      this.userExpression = this.mmCore.format(this.userExpression);
+    }
   }
 
   invoke() {
 
-    this.materialize.emit(this.userExpression);
-    this.userExpression = '';
-  }
+    if (typeof this.userExpression === "undefined") {
 
+      this.userExpression = '';
+    }
+
+    this.materialize.emit(this.userExpression);
+    this.userExpression = undefined;
+  }
 }

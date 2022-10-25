@@ -69,6 +69,7 @@ export class MmBlock {
   private ed: number;
   public dispHeight: number;
   public blockId: number;
+  public isFree: boolean;
 
   constructor(st: number, ed: number, dispHeight: number, blockId: number) {
 
@@ -76,6 +77,7 @@ export class MmBlock {
     this.ed = ed;
     this.dispHeight = dispHeight;
     this.blockId = blockId;
+    this.isFree = true;
   }
 
   getStart() {
@@ -96,6 +98,42 @@ export class MmBlock {
   setEnd(newEd: number) {
 
     this.ed = newEd;
+  }
+}
+
+export class MmLink {
+
+  st: number[];
+  ed: number[];
+  stAngle: number[];
+  edAngle: number[];
+
+  constructor(st: number[], stAngle: number[], edAngle: number[], ed: number[]) {
+
+    this.st = st;
+    this.ed = ed;
+    this.stAngle = stAngle;
+    this.edAngle = edAngle;
+  }
+
+  getStStr() {
+
+    return this.st[0] + "," + this.st[1];
+  }
+
+  getEdStr() {
+
+    return this.ed[0] + "," + this.ed[1];
+  }
+
+  getStAnStr() {
+
+    return this.stAngle[0] + "," + this.stAngle[1];
+  }
+
+  getEdAnStr() {
+
+    return this.edAngle[0] + "," + this.edAngle[1];
   }
 }
 
