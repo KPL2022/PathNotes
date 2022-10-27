@@ -111,9 +111,9 @@ export class MmLink {
   constructor(st: number[], stAngle: number[], edAngle: number[], ed: number[]) {
 
     this.st = st;
-    this.ed = ed;
     this.stAngle = stAngle;
     this.edAngle = edAngle;
+    this.ed = ed;
   }
 
   getStStr() {

@@ -18,15 +18,7 @@
 
       <path [attr.d]="'M' + link.getStStr() + ' C' + link.getStAnStr() + ' ' + link.getEdAnStr() + ' ' + link.getEdStr()" fill="none" stroke="red" stroke-width="5" />
     </ng-container>
-
-    <!-- <path d="M600,350 l 50,-25
-    a25,25 -30 0,1 50,-25 l 50,-25
-    a25,50 -30 0,1 50,-25 l 50,-25
-    a25,75 -30 0,1 50,-25 l 50,-25
-    a25,100 -30 0,1 50,-25 l 50,-25" fill="none" stroke="red" stroke-width="5" /> -->
     
-    <!-- <path d="M100,200 C200,100 600,100 600,200" fill="none" stroke="red" stroke-width="5"/> -->
-
     <ng-container *ngFor="let blockChain of nodeOrigin">
 
       <ng-container *ngFor="let block of blockChain">

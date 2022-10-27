@@ -33,66 +33,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     var a = this.activeNodes[0];
     var b = this.activeNodes[1];
 
-    var st!: number[];
-    var stAngle!: number[];
-    var ed!: number[];
-    var edAngle!: number[];
-
-    var xOffset = 30;
-    var yOffset = 8;
-
-    // assert a && b are collision free
-    // ignore a parallel b in x or y axis cases
-    if (a.getCx() > b.getCx()) {
-
-      if (a.getCy() > b.getCy()) {
-
-        // a is bottom right of b
-        
-        // link a tf corner to b br corner
-        st = [a.getCx() - xOffset, a.getCy() - yOffset];
-        ed = [b.getCx() + xOffset, b.getCy() + yOffset];
-        stAngle = [st[0], st[1] - 50];
-        edAngle = [ed[0] + 50, ed[1]];
-      } else {
-
-        // a is top right of b
-
-        // link a bl to b tr
-        st = [a.getCx() - xOffset, a.getCy() + yOffset];
-        ed = [b.getCx() + xOffset, b.getCy() - yOffset];
-        stAngle = [st[0], st[1] + 50];
-        edAngle = [ed[0] + 50, ed[1]];
-      }
-    } else {
-
-      if (a.getCy() > b.getCy()) {
-
-        // a is bottom left of b
-
-        // link a tr to b bl
-        st = [a.getCx() + xOffset, a.getCy() - yOffset];
-        ed = [b.getCx() - xOffset, b.getCy() + yOffset];
-        stAngle = [st[0] + 50, st[1]];
-        edAngle = [ed[0], ed[1] + 50];
-      } else {
-
-        // a is top left of b
-
-        // link a br to b tl
-        st = [a.getCx() + xOffset, a.getCy() + yOffset];
-        ed = [b.getCx() - xOffset, b.getCy() - yOffset];
-        stAngle = [st[0] + 50, st[1]];
-        edAngle = [ed[0], ed[1] - 50];
-      }
-    }
-
-    // st = [100, 200];
-    // stAngle = [200, 100];
-    // ed = [600, 200];
-    // edAngle = [600, 100];
-
-    this.activeLinks.push(new MmLink(st, stAngle, edAngle, ed));
+    this.generateLink(a, b);
   }
 
   initOrigin() {
@@ -168,8 +109,76 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   }
 
-  connect(a: MmNode, b: MmNode) {
+  generateLink(from: MmNode, to: MmNode) {
 
+    /**
+     * pseudo code:
+     * 
+     *  ->1. from givens, determine link parameters: st, stAn, edAn, ed
+     *      - make helper methods for the tl, tr, bl, br cases?
+     * 
+     *    2. alloc space for link given params
+     *    3. register link in activeLinks collection
+     */
+
+    var a = from;
+    var b = to;
+
+    var st!: number[];
+    var stAngle!: number[];
+    var edAngle!: number[];
+    var ed!: number[];
+
+    var xOffset = 30;
+    var yOffset = 8;
+
+    // assert a && b are collision free
+    // ignore a parallel b in x or y axis cases
+    if (a.getCx() > b.getCx()) {
+
+      if (a.getCy() > b.getCy()) {
+
+        // a is bottom right of b
+        
+        // link a tf corner to b br corner
+        st = [a.getCx() - xOffset, a.getCy() - yOffset];
+        ed = [b.getCx() + xOffset, b.getCy() + yOffset];
+        stAngle = [st[0], st[1] - 50];
+        edAngle = [ed[0] + 50, ed[1]];
+      } else {
+
+        // a is top right of b
+
+        // link a bl to b tr
+        st = [a.getCx() - xOffset, a.getCy() + yOffset];
+        ed = [b.getCx() + xOffset, b.getCy() - yOffset];
+        stAngle = [st[0], st[1] + 50];
+        edAngle = [ed[0] + 50, ed[1]];
+      }
+    } else {
+
+      if (a.getCy() > b.getCy()) {
+
+        // a is bottom left of b
+
+        // link a tr to b bl
+        st = [a.getCx() + xOffset, a.getCy() - yOffset];
+        ed = [b.getCx() - xOffset, b.getCy() + yOffset];
+        stAngle = [st[0] + 50, st[1]];
+        edAngle = [ed[0], ed[1] + 50];
+      } else {
+
+        // a is top left of b
+
+        // link a br to b tl
+        st = [a.getCx() + xOffset, a.getCy() + yOffset];
+        ed = [b.getCx() - xOffset, b.getCy() - yOffset];
+        stAngle = [st[0] + 50, st[1]];
+        edAngle = [ed[0], ed[1] - 50];
+      }
+    }
+
+    this.activeLinks.push(new MmLink(st, stAngle, edAngle, ed));
   }
 
   generateNode(userInput: string) {
@@ -179,6 +188,16 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     this.activeNodes.push(new MmNode(nodeCore[0], nodeCore[1], userInput, String(this.ids++)));
   }
 
+  /**
+   * relevance in part:
+   * 
+   * projection heuristic can provide iteration order in such a way that the provided order
+   * is flexible with respect to smallest unit on scale (i.e. if height of unit to alloc for
+   * is 2 cell-high, normally
+   * the composite rows would be 0-1, 2-3, 4-5, so 1-2 is not avaialble, making the space 
+   * allocation not truly flexible, but with projection heuristic, if 1-2 is on the freer side
+   * of things in terms of space availablility, then it will be included)
+   */
   fillPartitionItrOrder(order: number[], dims: number[]) {
 
     // projection heuristic on rows first, fallback on cols, return 'row' or 'col to client
