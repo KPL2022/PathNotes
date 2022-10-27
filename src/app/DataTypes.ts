@@ -196,6 +196,53 @@ export class MmNode {
 
     return Math.abs(point[0] - this.cx) < 75 && Math.abs(point[1] - this.cy) < 37;
   }
+
+  getPortLocation(to: MmNode): number[][] {
+
+    // case on location of to relative to self
+    // separate x/y gives 2 checks -> find assertion
+
+    // normalize the sizing parameters later
+    var xOffset = 35;
+    var yOffset = 20;
+    var xCtrlPtOffset = 50;
+    var yCtrlPtOffset = 25;
+
+    var ret: number[][] = [];
+    var res: number[] = [];
+    var resAn: number[] = [];
+
+    if (this.cx < to.getCx()) {
+
+      res.push(this.cx + xOffset);
+      resAn.push(res[0] + xCtrlPtOffset);
+    } else if (this.cx > to.getCx()) {
+
+      res.push(this.cx - xOffset);
+      resAn.push(res[0] - xCtrlPtOffset);
+    } else {
+
+      res.push(this.cx);
+      resAn.push(res[0]);
+    }
+
+    resAn.push(this.cy);
+
+    if (this.cy < to.getCy()) {
+
+      res.push(this.cy + yOffset);
+    } else if (this.cy > to.getCy()) {
+
+      res.push(this.cy - yOffset);
+    } else {
+
+      res.push(this.cy);
+    }
+
+    ret.push(res);
+    ret.push(resAn);
+    return ret;
+  }
 }
 
 export interface RecordEntry {

@@ -124,61 +124,66 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     var a = from;
     var b = to;
 
-    var st!: number[];
-    var stAngle!: number[];
-    var edAngle!: number[];
-    var ed!: number[];
+    var stPack: number[][] = a.getPortLocation(b);
+    var edPack: number[][] = b.getPortLocation(a);
 
-    var xOffset = 30;
-    var yOffset = 8;
+    var st: number[] = stPack[0];
+    var stAngle: number[] = stPack[1];
+    var edAngle: number[] = edPack[1];
+    var ed: number[] = edPack[0];
 
-    // assert a && b are collision free
-    // ignore a parallel b in x or y axis cases
-    if (a.getCx() > b.getCx()) {
-
-      if (a.getCy() > b.getCy()) {
-
-        // a is bottom right of b
-        
-        // link a tf corner to b br corner
-        st = [a.getCx() - xOffset, a.getCy() - yOffset];
-        ed = [b.getCx() + xOffset, b.getCy() + yOffset];
-        stAngle = [st[0], st[1] - 50];
-        edAngle = [ed[0] + 50, ed[1]];
-      } else {
-
-        // a is top right of b
-
-        // link a bl to b tr
-        st = [a.getCx() - xOffset, a.getCy() + yOffset];
-        ed = [b.getCx() + xOffset, b.getCy() - yOffset];
-        stAngle = [st[0], st[1] + 50];
-        edAngle = [ed[0] + 50, ed[1]];
-      }
-    } else {
-
-      if (a.getCy() > b.getCy()) {
-
-        // a is bottom left of b
-
-        // link a tr to b bl
-        st = [a.getCx() + xOffset, a.getCy() - yOffset];
-        ed = [b.getCx() - xOffset, b.getCy() + yOffset];
-        stAngle = [st[0] + 50, st[1]];
-        edAngle = [ed[0], ed[1] + 50];
-      } else {
-
-        // a is top left of b
-
-        // link a br to b tl
-        st = [a.getCx() + xOffset, a.getCy() + yOffset];
-        ed = [b.getCx() - xOffset, b.getCy() - yOffset];
-        stAngle = [st[0] + 50, st[1]];
-        edAngle = [ed[0], ed[1] - 50];
-      }
-    }
+    // alloc system needs major revision to handle allocing space for links lol
 
     this.activeLinks.push(new MmLink(st, stAngle, edAngle, ed));
+
+    // var xOffset = 30;
+    // var yOffset = 8;
+
+    // // assert a && b are collision free
+    // // ignore a parallel b in x or y axis cases
+    // if (a.getCx() > b.getCx()) {
+
+    //   if (a.getCy() > b.getCy()) {
+
+    //     // a is bottom right of b
+        
+    //     // link a tf corner to b br corner
+    //     st = [a.getCx() - xOffset, a.getCy() - yOffset];
+    //     ed = [b.getCx() + xOffset, b.getCy() + yOffset];
+    //     stAngle = [st[0], st[1] - 50];
+    //     edAngle = [ed[0] + 50, ed[1]];
+    //   } else {
+
+    //     // a is top right of b
+
+    //     // link a bl to b tr
+    //     st = [a.getCx() - xOffset, a.getCy() + yOffset];
+    //     ed = [b.getCx() + xOffset, b.getCy() - yOffset];
+    //     stAngle = [st[0], st[1] + 50];
+    //     edAngle = [ed[0] + 50, ed[1]];
+    //   }
+    // } else {
+
+    //   if (a.getCy() > b.getCy()) {
+
+    //     // a is bottom left of b
+
+    //     // link a tr to b bl
+    //     st = [a.getCx() + xOffset, a.getCy() - yOffset];
+    //     ed = [b.getCx() - xOffset, b.getCy() + yOffset];
+    //     stAngle = [st[0] + 50, st[1]];
+    //     edAngle = [ed[0], ed[1] + 50];
+    //   } else {
+
+    //     // a is top left of b
+
+    //     // link a br to b tl
+    //     st = [a.getCx() + xOffset, a.getCy() + yOffset];
+    //     ed = [b.getCx() - xOffset, b.getCy() - yOffset];
+    //     stAngle = [st[0] + 50, st[1]];
+    //     edAngle = [ed[0], ed[1] - 50];
+    //   }
+    // }
   }
 
   generateNode(userInput: string) {
