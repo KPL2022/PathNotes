@@ -1,5 +1,6 @@
 1. update MmNode's getPortLocation method for straightline links
-  - some kind of math with ellipse to find point at angle theta to center...
+  - mathematically derive port location thru intersection computation
+  - move getPortLocation() out of object, as standalone in canvas comp for now
 
 2. do other stuff to change link to straightlines connecting node center-to-center
   - curves, complexity unjustified, tracing curves for space alloc is a nightmare

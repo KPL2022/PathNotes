@@ -284,46 +284,61 @@ export class MmNode {
     // case on location of to relative to self
     // separate x/y gives 2 checks -> find assertion
 
+    /**
+     * model links as straight lines between self and to: node
+     * 
+     * to obtain port location on self:
+     * 
+     * - set self as origin
+     * - solve for interaction between self and line connecting self to to: node
+     *    - case on relation positioning to get specific coord solution
+     * - translate solution back to grid coordinates by applying self coord as offset
+     * 
+     * note on scope of this function:
+     * - might not be appropriate as object function anymore
+     *    - high chance being able to reuse computation to resolve neighbor port as well
+     */
+
+
+    var res: number[] = [];
+    return res;
+
     // normalize the sizing parameters later
-    var xOffset = 35;
-    var yOffset = 20;
+
+    // var xOffset = 35;
+    // var yOffset = 20;
     // var xCtrlPtOffset = 50;
     // var yCtrlPtOffset = 25;
 
-    var ret: number[][] = [];
-    var res: number[] = [];
-    var resAn: number[] = [];
+    // var ret: number[][] = [];
+    // var resAn: number[] = [];
 
-    if (this.cx < to.getCx()) {
+    // if (this.cx < to.getCx()) {
 
-      res.push(this.cx + xOffset);
-      resAn.push(res[0] + xCtrlPtOffset);
-    } else if (this.cx > to.getCx()) {
+    //   res.push(this.cx + xOffset);
+    //   resAn.push(res[0] + xCtrlPtOffset);
+    // } else if (this.cx > to.getCx()) {
 
-      res.push(this.cx - xOffset);
-      resAn.push(res[0] - xCtrlPtOffset);
-    } else {
+    //   res.push(this.cx - xOffset);
+    //   resAn.push(res[0] - xCtrlPtOffset);
+    // } else {
 
-      res.push(this.cx);
-      resAn.push(res[0]);
-    }
+    //   res.push(this.cx);
+    //   resAn.push(res[0]);
+    // }
 
-    resAn.push(this.cy);
+    // resAn.push(this.cy);
 
-    if (this.cy < to.getCy()) {
+    // if (this.cy < to.getCy()) {
 
-      res.push(this.cy + yOffset);
-    } else if (this.cy > to.getCy()) {
+    //   res.push(this.cy + yOffset);
+    // } else if (this.cy > to.getCy()) {
 
-      res.push(this.cy - yOffset);
-    } else {
+    //   res.push(this.cy - yOffset);
+    // } else {
 
-      res.push(this.cy);
-    }
-
-    ret.push(res);
-    ret.push(resAn);
-    return ret;
+    //   res.push(this.cy);
+    // }
   }
 }
 
