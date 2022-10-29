@@ -564,22 +564,74 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   checkLinkSpace(type: string, parent: MmNode, tfBlk: MmBlock): boolean {
 
+    if (type !== 'child node') {
+
+      return true;
+    }
+
+    /**
+     * - assert link type -> straightline
+     * - assert port location within bounds of host nodes
+     * 
+     * pseudo code:
+     * 
+     * 1. obtain port locations
+     * 2. based on ports, compute slope m, handle dX = 0 case
+     * 3. trace out 0.5 unit from ports as start/end points
+     * 4. for every 1 unit in col or row, trace by slope change in dimensions
+     * 5. bound new sample to cell and check if free
+     *      - early return false on false
+     * 6. if all free -> return true
+     */
+
+    // create dummy node
+    var entityCore: number[] = [];
+
+    entityCore[0] = tfBlk.getStart() + Math.floor((tfBlk.getEnd() - tfBlk.getStart()) * entityWidth / 2);
+    entityCore[1] = tfBlk.blockId * tfBlk.dispHeight + Math.floor(tfBlk.dispHeight * entityHeight / 2);
+
+    var dummy = new MmNode(null, entityCore[0], entityCore[1], '', '');
+
+    // get port locations
+    var portLocationPack = this.getPortLocations(dummy, parent);
+    var st = portLocationPack[0];
+    var ed = portLocationPack[1];
+
+    // compute slope m
+    if (dummy.getCx() === parent.getCx()) {
+
+
+    } else {
+
+      var m = (dummy.getCy() - parent.getCy()) / (dummy.getCx() - parent.getCx());
+
+      var xDir!: number;
+      var yDir!: number;
+
+      if (dummy.getCx() > parent.getCx()) {
+
+        xDir = -1;
+      } else {
+
+        xDir = 1;
+      }
+
+      if (dummy.getCy() > parent.getCy()) {
+
+        yDir = -1;
+      } else {
+
+        yDir = 1;
+      }
+
+      // trace out 0.5 units for start/end
+    }
+
     return true;
-
-    // if (type !== 'child node') {
-
-    //   return true;
-    // }
-
     // var entityWidth = 3;
     // var entityHeight = 2;
 
-    // // create dummy node
-    // var entityCore: number[] = [];
-    // entityCore[0] = tfBlk.getStart() + Math.floor((tfBlk.getEnd() - tfBlk.getStart()) * entityWidth / 2);
-    // entityCore[1] = tfBlk.blockId * tfBlk.dispHeight + Math.floor(tfBlk.dispHeight * entityHeight / 2);
 
-    // var dummy = new MmNode(null, entityCore[0], entityCore[1], '', '');
 
     // // get would-be link params
     // var stPack: number[][] = dummy.getPortLocation(parent);
