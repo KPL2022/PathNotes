@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-import { CommandDef, OptionDef, SystemCommand, TrieNode } from './DataTypes';
+import { CommandDef, OptionDef, SystemCommand, TrieNode, OperatorName, getOptName, getOperatorLevel } from './DataTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -99,7 +99,7 @@ export class MindmapService {
   // TODO: imp order of operations by hierarchy
   // set root to be highest operator found in user input, split from there
   // keep partial order state, restore order after introducing new operator at each encounter 
-  buildExecutionTree(rt: TrieNode, src: string): SystemCommand | string {
+  buildExecutionTree(rt: TrieNode, src: string): SystemCommand {
 
     var cmdDef: CommandDef | null = null;
     var idx = -1;
@@ -136,41 +136,26 @@ export class MindmapService {
 
     if (cmdDef === null) {
 
-      // base case, return string given as operand for parent
-      return src;
+      // base case, return lvl0 generate command for string
+      return new SystemCommand(OperatorName.generate, getOperatorLevel(OperatorName.generate), [src]);
     } else {
 
-      var optName = cmdDef.name;
-      var isBaseOpt: boolean = false;
-      var operands!: string | string[] | SystemCommand[] | any[];
-      var tmpOperands = [];
+      var optName: OperatorName = getOptName(cmdDef.name);
+      var cmdLvl: number = getOperatorLevel(optName);
+      var operands = [];
 
       // found cmd, case on cmd type unary or binary
       if (cmdDef.type === 'binary') {
 
-        tmpOperands.push(this.buildExecutionTree(rt, src.substring(0, idx - cmdDef.symbol.length).trim()));
-        tmpOperands.push(this.buildExecutionTree(rt, src.substring(idx).trim()));
-
-        operands = tmpOperands;
-
-        if (typeof tmpOperands[0] === "string" && typeof tmpOperands[1] === "string") {
-
-          isBaseOpt = true;
-        }
+        operands.push(this.buildExecutionTree(rt, src.substring(0, idx - cmdDef.symbol.length).trim()));
+        operands.push(this.buildExecutionTree(rt, src.substring(idx).trim()));
       } else {
 
         // assert type === 'unary'
-        tmpOperands.push(this.buildExecutionTree(rt, src.substring(idx)));
-        
-        operands = tmpOperands;
-
-        if (typeof tmpOperands[0] === "string") {
-
-          isBaseOpt = true;
-        }
+        operands.push(this.buildExecutionTree(rt, src.substring(idx).trim()));
       }
 
-      return new SystemCommand(optName, isBaseOpt, operands);
+      return new SystemCommand(optName, cmdLvl, operands);
     }
   }
 }

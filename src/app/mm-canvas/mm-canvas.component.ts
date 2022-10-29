@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges, ApplicationRef } from '@angular/core';
 
-import { MmBlock, MmLink, MmNode, SystemCommand } from '../DataTypes';
+import { MmBlock, MmLink, MmNode, OperatorName, SystemCommand } from '../DataTypes';
 
 @Component({
   selector: 'app-mm-canvas',
@@ -25,15 +25,15 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     // this.activeNodes.push(new MmNode(100, 100, "xD", String(this.ids++)));
     this.initOrigin();
 
-    for (var i = 0; i < 2; i++) {
+    // for (var i = 0; i < 2; i++) {
 
-      this.generateNode(String(i));
-    }
+    //   this.generateNode(String(i));
+    // }
 
-    var a = this.activeNodes[0];
-    var b = this.activeNodes[1];
+    // var a = this.activeNodes[0];
+    // var b = this.activeNodes[1];
 
-    this.generateLink(a, b);
+    // this.generateLink(a, b);
   }
 
   initOrigin() {
@@ -80,7 +80,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     }
   }
 
-  interpretCmd(sysCmd: SystemCommand | string) {
+  interpretCmd(sysCmd: SystemCommand) {
 
     // TODO: imp
     // this.collisionAwarePlacement(userCmd[0]);
@@ -90,52 +90,147 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     //   this.activateNode('test');
     // }
 
-    if (typeof sysCmd === "string") {
-
-      console.log("canvas got string: " + sysCmd);
-
-      this.generateNode(sysCmd);
-    } else {
-
-      console.log("canvas got a syscmd obj: ");
-      console.log(sysCmd);
-
-      this.traceExecutionTree(sysCmd);
-    }
+    console.log(sysCmd);
+    this.traceExecutionTree(sysCmd);
   }
 
   execute(cmd: SystemCommand, args: any[]) {
 
+    if (cmd.getCmdLvl() === 0) {
 
+      // assert name === generate
+      var userInput: string = args[0] as string;
+      
+      var existNode = this.activeNodes.find((val: MmNode) => val.getId() === userInput);
+
+      if (existNode !== undefined) {
+
+        return existNode;
+      } else {
+
+        return this.generateNode(userInput);
+      }
+    } else if (cmd.getCmdLvl() === 1) {
+
+      // switch: edit, remove, highlight
+      if (cmd.getOperatorName() === OperatorName.edit) {
+
+
+      } else if (cmd.getOperatorName() === OperatorName.remove) {
+
+
+      } else {
+
+        // assert name === highlight
+      }
+    } else if (cmd.getCmdLvl() === 2) {
+
+      // switch: link, unlink
+      if (cmd.getOperatorName() === OperatorName.link) {
+
+        var child: MmNode = args[0] as MmNode;
+        var parent: MmNode = args[1] as MmNode;
+
+        // check if link alr exists
+        var findLink = parent.getChildrenLinks().find((link: MmLink) => link.child.getId() === child.getId());
+
+        if (findLink !== undefined) {
+
+          // do nothing xD
+        } else {
+
+          this.generateLink(child, parent);
+
+          // recursively generate all related links
+          this.tmpRecLinkGen(child);
+        }
+
+        return parent;
+      } else {
+
+        // assert name === unlink
+      }
+    } else {
+
+      // merge is only lvl3 so far
+
+    }
+
+    // for all unimplemented
+    return undefined;
+  }
+
+  tmpRecLinkGen(rt: MmNode) {
+
+    // base case, leaf node
+    if (rt.getChildrenLinks().length === 0) {
+
+      // do nothing
+    } else {
+
+      // set links for all direct children
+      var children: MmLink[] = rt.getChildrenLinks();
+
+      for (var i = 0; i < children.length; i++) {
+
+        var link: MmLink = children[i];
+        
+        // relocate child to around new parent location
+        this.relocate(rt, link.child);
+
+        // update link params: st, stAn, edAn, ed
+        var stPack: number[][] = link.child.getPortLocation(rt);
+        var edPack: number[][] = rt.getPortLocation(link.child);
+
+        link.st = stPack[0];
+        link.stAngle = stPack[1];
+        link.edAngle = edPack[1];
+        link.ed = edPack[0];
+
+        // rec to child
+        this.tmpRecLinkGen(link.child);
+      }
+    }
   }
 
   traceExecutionTree(rt: SystemCommand) {
 
-    if (rt.isBaseOpt()) {
+    if (rt.getCmdLvl() <= 1) {
 
+      // <= atomic level commands: 0-generate, 1-edit, remove, highlight
       return this.execute(rt, rt.getOperands());
     } else {
 
-      var children = rt.getOperands();
-      var operands = [];
+      // branch level commands: link, unlink, merge
+      var children: SystemCommand[] = rt.getOperands() as SystemCommand[];
+      var operands: any[] = [];
 
       for (var i = 0; i < children.length; i++) {
 
         operands.push(this.traceExecutionTree(children[i]));
       }
 
-      // case on branch cmd type
       return this.execute(rt, operands);
     }
   }
 
   allocLink(st: number[], ed: number[]) {
 
+
   }
 
   free(centerPt: number[]) {
 
-    // TODO: imp
+    var nodeLeftCol = Math.floor(centerPt[0] / this.colSize) - 1;
+    var nodeTopRow = Math.floor(centerPt[1] / this.rowSize) - 1;
+
+    this.nodeOrigin[nodeTopRow][nodeLeftCol].isFree = true;
+    this.nodeOrigin[nodeTopRow][nodeLeftCol + 1].isFree = true;
+    this.nodeOrigin[nodeTopRow][nodeLeftCol + 2].isFree = true;
+
+    this.nodeOrigin[nodeTopRow + 1][nodeLeftCol].isFree = true;
+    this.nodeOrigin[nodeTopRow + 1][nodeLeftCol + 1].isFree = true;
+    this.nodeOrigin[nodeTopRow + 1][nodeLeftCol + 2].isFree = true;
   }
 
   distBetween(parent: MmNode, childCenter: number[]) {
@@ -179,15 +274,18 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     var oldCx = child.getCx();
     var oldCy = child.getCy();
 
-    var newCs: number[] = this.allocSpace('childof', [parent, child]);
+    var newCs: number[] = this.allocSpace('childof', [child, parent]);
     
-    this.free([oldCx, oldCy]);
+    if (newCs[0] !== oldCx || newCs[1] !== oldCy) {
 
-    child.setCx(newCs[0]);
-    child.setCy(newCs[1]);
+      this.free([oldCx, oldCy]);
+
+      child.setCx(newCs[0]);
+      child.setCy(newCs[1]);
+    }
   }
 
-  generateLink(from: MmNode, to: MmNode) {
+  generateLink(child: MmNode, parent: MmNode) {
 
     /**
      * pseudo code:
@@ -208,13 +306,10 @@ export class MmCanvasComponent implements OnInit, OnChanges {
      * 3. reg link in active links collection
      */
 
-    var a = from;
-    var b = to;
+    this.relocate(parent, child);
 
-    this.relocate(a, b);
-
-    var stPack: number[][] = a.getPortLocation(b);
-    var edPack: number[][] = b.getPortLocation(a);
+    var stPack: number[][] = child.getPortLocation(parent);
+    var edPack: number[][] = parent.getPortLocation(child);
 
     var st: number[] = stPack[0];
     var stAngle: number[] = stPack[1];
@@ -223,7 +318,10 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     // this.allocLink(st, ed);
 
-    this.activeLinks.push(new MmLink(st, stAngle, edAngle, ed));
+    var newLink = new MmLink(parent, child, st, stAngle, edAngle, ed);
+    this.activeLinks.push(newLink);
+    child.setParentLink(newLink);
+    parent.getChildrenLinks().push(newLink);
 
     // var xOffset = 30;
     // var yOffset = 8;
@@ -278,8 +376,11 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   generateNode(userInput: string) {
 
     var nodeCore: number[] = this.allocSpace('node', []);
+    var res = new MmNode(null, nodeCore[0], nodeCore[1], userInput, String(this.ids++));
 
-    this.activeNodes.push(new MmNode(nodeCore[0], nodeCore[1], userInput, String(this.ids++)));
+    this.activeNodes.push(res);
+    
+    return res;
   }
 
   /**
@@ -376,7 +477,125 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     }
   }
 
-  alloc(scope: MmBlock[], type: string, ori: string): number[] | boolean {
+  checkLinkSpace(type: string, parent: MmNode, tfBlk: MmBlock): boolean {
+
+    return true;
+
+    if (type !== 'child node') {
+
+      return true;
+    }
+
+    var entityWidth = 3;
+    var entityHeight = 2;
+
+    // create dummy node
+    var entityCore: number[] = [];
+    entityCore[0] = tfBlk.getStart() + Math.floor((tfBlk.getEnd() - tfBlk.getStart()) * entityWidth / 2);
+    entityCore[1] = tfBlk.blockId * tfBlk.dispHeight + Math.floor(tfBlk.dispHeight * entityHeight / 2);
+
+    var dummy = new MmNode(null, entityCore[0], entityCore[1], '', '');
+
+    // get would-be link params
+    var stPack: number[][] = dummy.getPortLocation(parent);
+    var edPack: number[][] = parent.getPortLocation(dummy);
+
+    var st = stPack[0];
+    var stAn = stPack[1];
+    var edAn = edPack[1];
+    var ed = edPack[0];
+
+    // move ports out of host bubble
+    if (st[0] > ed[0]) {
+
+      st[0] -= this.colSize;
+      ed[0] += this.colSize;
+    } else if (st[0] < ed[0]) {
+
+      st[0] += this.colSize;
+      ed[0] -= this.colSize;
+    } else {
+
+    }
+
+    if (st[1] > ed[1]) {
+
+      st[1] -= this.rowSize;
+      ed[1] += this.rowSize;
+    } else if (st[1] < ed[1]) {
+
+      st[1] += this.rowSize;
+      ed[1] -= this.rowSize;
+    } else {
+
+
+    }
+
+    // raw pixel params
+    var xDiff = Math.abs(st[0] - ed[0]);
+    var yDiff = Math.abs(st[1] - ed[1]);
+    var h = ed[1];
+
+    // convert link params to col and row ID's
+    st[0] = Math.floor(st[0] / this.colSize);
+    st[1] = Math.floor(st[1] / this.rowSize);
+
+    ed[0] = Math.floor(ed[0] / this.colSize);
+    ed[1] = Math.floor(ed[1] / this.rowSize);
+
+    // trace link from parent to would be child location
+
+    // set direction modifiers
+    var xDir: number = ed[0] < st[0] ? 1 : -1;
+    var yDir: number = ed[1] < st[1] ? 1 : -1;
+
+    // case on parent and child being horizontal parallels or not
+    if (ed[0] === st[0]) {
+
+      // use y-direction instead
+      var i = ed[1];
+      var hRow = ed[1];
+
+
+      while (i !== st[1]) {
+
+        if (!this.nodeOrigin[hRow][ed[0]].isFree) {
+
+          return false;
+        }
+
+        i = i + (1 * yDir);
+        h = h + (this.rowSize * yDir);
+        hRow = Math.floor(h / this.rowSize);
+      }
+      
+      return true;
+    } else {
+
+      var slope = yDiff / xDiff;
+      var i = ed[0];
+      var hRow = ed[1];
+
+      // window.alert("slope is " + slope + " checking " + i + ", " + hRow);
+
+      while (i !== st[0]) {
+
+        // for column i, check would be link block
+        if (!this.nodeOrigin[hRow][i].isFree) {
+
+          return false;
+        }
+
+        i = i + (1 * xDir);
+        h = Math.floor(h + (slope * yDir));
+        hRow = Math.floor(h / this.rowSize);
+      }
+
+      return true;
+    }
+  }
+
+  alloc(scope: MmBlock[], type: string, ori: string, args: any[]): number[] | boolean {
 
     // for each center coord c typeof number[] with x=number[0], y=number[1] e scope
     // determine if c can host given type of entity
@@ -399,7 +618,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
       if (ori === 'tf') {
 
-        if (this.containable(scope[i], entityWidth, entityHeight, ori)) {
+        if (this.checkLinkSpace(type, args[0] as MmNode, scope[i])
+            && this.containable(scope[i], entityWidth, entityHeight, ori)) {
 
           var entityCore: number[] = [];
           entityCore[0] = scope[i].getStart() + Math.floor((scope[i].getEnd() - scope[i].getStart()) * entityWidth / 2);
@@ -482,7 +702,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   
           cands = this.shuffleOrder(cands);
   
-          var ret: number[] | boolean = this.alloc(cands, 'host node', 'tf');
+          var ret: number[] | boolean = this.alloc(cands, 'host node', 'tf', []);
   
           if (typeof ret !== "boolean") {
   
@@ -495,8 +715,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     if (purpose === 'childof') {
 
-      var parent: MmNode = args[0];
-      var child: MmNode = args[1];
+      var child: MmNode = args[0];
+      var parent: MmNode = args[1];
       var childCenter: number[] = [child.getCx(), child.getCy()];
 
       // compute radial search limit from old child position
@@ -588,7 +808,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         // shuffle order
         cands = this.shuffleOrder(cands);
 
-        var ret: number[] | boolean = this.alloc(cands, 'host node', 'tf');
+        var ret: number[] | boolean = this.alloc(cands, 'child node', 'tf', [parent]);
 
         if (typeof ret !== "boolean") {
 

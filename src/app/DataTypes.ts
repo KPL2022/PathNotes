@@ -1,3 +1,59 @@
+export enum OperatorName {
+
+  merge = "merge",
+  link = "link",
+  unlink = "unlink",
+  generate = "generate",
+  edit = "edit",
+  remove = "remove",
+  highlight = "highlight",
+  unknown = "unknown"
+}
+
+export function getOptName(name: string) {
+
+  if (name === 'merge') {
+
+    return OperatorName.merge;
+  } else if (name === 'link') {
+
+    return OperatorName.link;
+  } else if (name === 'unlink') {
+
+    return OperatorName.unlink;
+  } else if (name === 'edit') {
+
+    return OperatorName.edit;
+  } else if (name === 'remove') {
+
+    return OperatorName.remove;
+  } else if (name === 'highlight') {
+
+    return OperatorName.highlight;
+  } else {
+
+    return OperatorName.unknown;
+  }
+}
+
+export function getOperatorLevel(name: OperatorName) {
+
+  if (name === OperatorName.merge) {
+
+    return 3;
+  } else if (name === OperatorName.link || name === OperatorName.unlink) {
+
+    return 2;
+  } else if (name === OperatorName.generate) {
+
+    return 0;
+  } else {
+
+    // edit, remove, or highlight
+    return 1;
+  }
+}
+
 export class TrieNode {
 
   val: string;
@@ -36,14 +92,14 @@ export interface OptionDef {
 
 export class SystemCommand {
 
-  private operatorName: string;
-  private baseOpt: boolean;
-  private operands: string | string[] | SystemCommand[];
+  private operatorName: OperatorName;
+  private cmdLvl: number;
+  private operands: string[] | SystemCommand[];
 
-  constructor(optName: string, baseOpt: boolean, operands: string | string[] | SystemCommand[]) {
+  constructor(optName: OperatorName, cmdLvl: number, operands: string[] | SystemCommand[]) {
 
     this.operatorName = optName;
-    this.baseOpt = baseOpt;
+    this.cmdLvl = cmdLvl;
     this.operands = operands;
   }
 
@@ -52,9 +108,9 @@ export class SystemCommand {
     return this.operatorName;
   }
 
-  isBaseOpt() {
+  getCmdLvl() {
 
-    return this.baseOpt;
+    return this.cmdLvl;
   }
 
   getOperands() {
@@ -103,12 +159,18 @@ export class MmBlock {
 
 export class MmLink {
 
+  parent: MmNode;
+  child: MmNode;
+
   st: number[];
   ed: number[];
   stAngle: number[];
   edAngle: number[];
 
-  constructor(st: number[], stAngle: number[], edAngle: number[], ed: number[]) {
+  constructor(parent: MmNode, child: MmNode, st: number[], stAngle: number[], edAngle: number[], ed: number[]) {
+
+    this.parent = parent;
+    this.child = child;
 
     this.st = st;
     this.stAngle = stAngle;
@@ -143,13 +205,33 @@ export class MmNode {
   private cy: number;
   private txt: string;
   private id: string;
+  
+  private parentLink: MmLink | null;
+  private childrenLinks: MmLink[] = [];
 
-  constructor(x: number, y: number, txt: string, id: string) {
+  constructor(parentLink: MmLink | null, x: number, y: number, txt: string, id: string) {
+
+    this.parentLink = parentLink;
 
     this.cx = x;
     this.cy = y;
     this.txt = txt;
     this.id = id;
+  }
+
+  setParentLink(newLink: MmLink) {
+
+    this.parentLink = newLink;
+  }
+
+  getParentLink() {
+
+    return this.parentLink;
+  }
+
+  getChildrenLinks() {
+
+    return this.childrenLinks;
   }
 
   getCx() {
