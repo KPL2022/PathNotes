@@ -164,17 +164,17 @@ export class MmLink {
 
   st: number[];
   ed: number[];
-  stAngle: number[];
-  edAngle: number[];
+  // stAngle: number[];
+  // edAngle: number[];
 
-  constructor(parent: MmNode, child: MmNode, st: number[], stAngle: number[], edAngle: number[], ed: number[]) {
+  constructor(parent: MmNode, child: MmNode, st: number[], ed: number[]) {
 
     this.parent = parent;
     this.child = child;
 
     this.st = st;
-    this.stAngle = stAngle;
-    this.edAngle = edAngle;
+    // this.stAngle = stAngle;
+    // this.edAngle = edAngle;
     this.ed = ed;
   }
 
@@ -188,15 +188,15 @@ export class MmLink {
     return this.ed[0] + "," + this.ed[1];
   }
 
-  getStAnStr() {
+  // getStAnStr() {
 
-    return this.stAngle[0] + "," + this.stAngle[1];
-  }
+  //   return this.stAngle[0] + "," + this.stAngle[1];
+  // }
 
-  getEdAnStr() {
+  // getEdAnStr() {
 
-    return this.edAngle[0] + "," + this.edAngle[1];
-  }
+  //   return this.edAngle[0] + "," + this.edAngle[1];
+  // }
 }
 
 export class MmNode {
@@ -279,7 +279,7 @@ export class MmNode {
     return Math.abs(point[0] - this.cx) < 75 && Math.abs(point[1] - this.cy) < 37;
   }
 
-  getPortLocation(to: MmNode): number[][] {
+  getPortLocation(to: MmNode): number[] {
 
     // case on location of to relative to self
     // separate x/y gives 2 checks -> find assertion
@@ -287,8 +287,8 @@ export class MmNode {
     // normalize the sizing parameters later
     var xOffset = 35;
     var yOffset = 20;
-    var xCtrlPtOffset = 50;
-    var yCtrlPtOffset = 25;
+    // var xCtrlPtOffset = 50;
+    // var yCtrlPtOffset = 25;
 
     var ret: number[][] = [];
     var res: number[] = [];

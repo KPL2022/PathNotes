@@ -5,6 +5,8 @@
 
   <svg:svg class="svg-frame" style="border: 3px solid black">
 
+    <line x1="0" y1="0" x2="200" y2="200" style="stroke:rgb(255,0,0);stroke-width:5" />
+
     <ng-container *ngFor="let node of activeNodes">
 
       <ellipse [attr.cx]="node.getCx()" [attr.cy]="node.getCy()" rx="45" ry="32" style="fill:yellow;stroke:purple;stroke-width:2" />

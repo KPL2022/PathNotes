@@ -25,15 +25,15 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     // this.activeNodes.push(new MmNode(100, 100, "xD", String(this.ids++)));
     this.initOrigin();
 
-    // for (var i = 0; i < 2; i++) {
+    for (var i = 0; i < 2; i++) {
 
-    //   this.generateNode(String(i));
-    // }
+      this.generateNode(String(i));
+    }
 
-    // var a = this.activeNodes[0];
-    // var b = this.activeNodes[1];
+    var a = this.activeNodes[0];
+    var b = this.activeNodes[1];
 
-    // this.generateLink(a, b);
+    this.generateLink(a, b);
   }
 
   initOrigin() {
@@ -276,6 +276,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     var newCs: number[] = this.allocSpace('childof', [child, parent]);
     
+    // TODO: imp special return for no result change
     if (newCs[0] !== oldCx || newCs[1] !== oldCy) {
 
       this.free([oldCx, oldCy]);
