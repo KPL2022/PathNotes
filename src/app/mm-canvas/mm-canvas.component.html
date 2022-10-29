@@ -5,7 +5,7 @@
 
   <svg:svg class="svg-frame" style="border: 3px solid black">
 
-    <line x1="0" y1="0" x2="200" y2="200" style="stroke:rgb(255,0,0);stroke-width:5" />
+    <!-- <line x1="0" y1="0" x2="200" y2="200" style="stroke:rgb(255,0,0);stroke-width:5" /> -->
 
     <ng-container *ngFor="let node of activeNodes">
 
@@ -18,7 +18,7 @@
 
     <ng-container *ngFor="let link of activeLinks">
 
-      <path [attr.d]="'M' + link.getStStr() + ' C' + link.getStAnStr() + ' ' + link.getEdAnStr() + ' ' + link.getEdStr()" fill="none" stroke="red" stroke-width="5" />
+      <line [attr.x1]="link.st[0]" [attr.y1]="link.st[1]" [attr.x2]="link.ed[0]" [attr.y2]="link.ed[1]" style="stroke:rgb(255,0,0);stroke-width:5" />
     </ng-container>
     
     <ng-container *ngFor="let blockChain of nodeOrigin">

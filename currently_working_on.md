@@ -1,9 +1,10 @@
-1. update MmNode's getPortLocation method for straightline links
+[v]1. update MmNode's getPortLocation method for straightline links
   - mathematically derive port location thru intersection computation
   - move getPortLocation() out of object, as standalone in canvas comp for now
 
-2. do other stuff to change link to straightlines connecting node center-to-center
+[v]2. do other stuff to change link to straightlines connecting node center-to-center
   - curves, complexity unjustified, tracing curves for space alloc is a nightmare
+  - forgot what i meant by other stuff, so mark as complete i guess =p
 
 3. once links straight line, update link tracing methods, i think allocLink() mostly?
   - put link space usage on the radar

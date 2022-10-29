@@ -1,3 +1,4 @@
+import { Xmb } from '@angular/compiler';
 import { Component, OnInit, Input, OnChanges, SimpleChanges, ApplicationRef } from '@angular/core';
 
 import { MmBlock, MmLink, MmNode, OperatorName, SystemCommand } from '../DataTypes';
@@ -179,13 +180,10 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         this.relocate(rt, link.child);
 
         // update link params: st, stAn, edAn, ed
-        var stPack: number[][] = link.child.getPortLocation(rt);
-        var edPack: number[][] = rt.getPortLocation(link.child);
+        var portLocationPack: number[][] = this.getPortLocations(link.child, rt);
 
-        link.st = stPack[0];
-        link.stAngle = stPack[1];
-        link.edAngle = edPack[1];
-        link.ed = edPack[0];
+        link.st = portLocationPack[0];
+        link.ed = portLocationPack[1];
 
         // rec to child
         this.tmpRecLinkGen(link.child);
@@ -286,6 +284,88 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     }
   }
 
+  getPortLocations(from: MmNode, to: MmNode): number[][] {
+
+    /**
+     * pseudo code:
+     * 
+     * 1. set self as origin, compute x^2
+     * 2. from x^2, compute y's magnitude
+     * 3. sqrt(x^2) to obtain x's magnitude
+     * 4. translate solution back to base coord system by applying self as offset
+     * 5. case on relation positioning to assign direction modifiers to raw x/y
+     * 
+     * 6. return solutions in order of parameters given
+     */
+
+    var a = 45;
+    var b = 32;
+    
+    var ret: number[][] = [];
+
+    // handle from vertical align to: node case first
+    if (from.getCx() === to.getCx()) {
+
+      if (from.getCy() > to.getCy()) {
+
+        ret.push([from.getCx(), from.getCy() + b]);
+        ret.push([to.getCx(), to.getCy() - b]);
+      } else {
+
+        ret.push([from.getCx(), from.getCy() - b]);
+        ret.push([to.getCx(), to.getCy() + b]);
+      }
+
+      return ret;
+    }
+
+    // assert from.cx !== to.cx, so slope is defined
+    var m = (from.getCy() - to.getCy()) / (from.getCx() - to.getCx());
+
+    var c = a * b;
+    var d = m * a;
+
+    // obtain x^2 value
+    var xSq = (c * c) / (b * b + d * d);
+
+    // obtain y's magnitude
+    var yMag = Math.sqrt(b * b * (1 - xSq / (a * a)));
+
+    // obtain x's magnitude
+    var xMag = Math.sqrt(xSq);
+
+    // set from: node direction modifier by casing on relative positioning
+    // to: node variant is simply from's flipped
+    var fromXDir!: number;
+    var fromYDir!: number;
+
+    if (from.getCx() > to.getCx()) {
+
+      fromXDir = -1;
+    } else {
+
+      fromXDir = 1;
+    }
+
+    if (from.getCy() > to.getCy()) {
+
+      fromYDir = -1;
+    } else {
+
+      fromYDir = 1;
+    }
+
+    console.log(xMag + " is x mag");
+    console.log(yMag + " is y mag");
+    // translate raw x/y back to system coord by applying host node's offset with direction modifiers
+    ret.push([from.getCx() + fromXDir * xMag, from.getCy() + fromYDir * yMag]);
+    ret.push([to.getCx() + -1 * fromXDir * xMag, to.getCy() + -1 * fromYDir * yMag]);
+
+    console.log(ret);
+
+    return ret;
+  }
+
   generateLink(child: MmNode, parent: MmNode) {
 
     /**
@@ -309,17 +389,21 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     this.relocate(parent, child);
 
-    var stPack: number[][] = child.getPortLocation(parent);
-    var edPack: number[][] = parent.getPortLocation(child);
+    var portLocationPack: number[][] = this.getPortLocations(child, parent);
+    var st: number[] = portLocationPack[0];
+    var ed: number[] = portLocationPack[1];
 
-    var st: number[] = stPack[0];
-    var stAngle: number[] = stPack[1];
-    var edAngle: number[] = edPack[1];
-    var ed: number[] = edPack[0];
+    // var stPack: number[][] = child.getPortLocation(parent);
+    // var edPack: number[][] = parent.getPortLocation(child);
+
+    // var st: number[] = stPack[0];
+    // var stAngle: number[] = stPack[1];
+    // var edAngle: number[] = edPack[1];
+    // var ed: number[] = edPack[0];
 
     // this.allocLink(st, ed);
 
-    var newLink = new MmLink(parent, child, st, stAngle, edAngle, ed);
+    var newLink = new MmLink(child, parent, st, ed);
     this.activeLinks.push(newLink);
     child.setParentLink(newLink);
     parent.getChildrenLinks().push(newLink);
@@ -482,118 +566,118 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     return true;
 
-    if (type !== 'child node') {
+    // if (type !== 'child node') {
 
-      return true;
-    }
+    //   return true;
+    // }
 
-    var entityWidth = 3;
-    var entityHeight = 2;
+    // var entityWidth = 3;
+    // var entityHeight = 2;
 
-    // create dummy node
-    var entityCore: number[] = [];
-    entityCore[0] = tfBlk.getStart() + Math.floor((tfBlk.getEnd() - tfBlk.getStart()) * entityWidth / 2);
-    entityCore[1] = tfBlk.blockId * tfBlk.dispHeight + Math.floor(tfBlk.dispHeight * entityHeight / 2);
+    // // create dummy node
+    // var entityCore: number[] = [];
+    // entityCore[0] = tfBlk.getStart() + Math.floor((tfBlk.getEnd() - tfBlk.getStart()) * entityWidth / 2);
+    // entityCore[1] = tfBlk.blockId * tfBlk.dispHeight + Math.floor(tfBlk.dispHeight * entityHeight / 2);
 
-    var dummy = new MmNode(null, entityCore[0], entityCore[1], '', '');
+    // var dummy = new MmNode(null, entityCore[0], entityCore[1], '', '');
 
-    // get would-be link params
-    var stPack: number[][] = dummy.getPortLocation(parent);
-    var edPack: number[][] = parent.getPortLocation(dummy);
+    // // get would-be link params
+    // var stPack: number[][] = dummy.getPortLocation(parent);
+    // var edPack: number[][] = parent.getPortLocation(dummy);
 
-    var st = stPack[0];
-    var stAn = stPack[1];
-    var edAn = edPack[1];
-    var ed = edPack[0];
+    // var st = stPack[0];
+    // var stAn = stPack[1];
+    // var edAn = edPack[1];
+    // var ed = edPack[0];
 
-    // move ports out of host bubble
-    if (st[0] > ed[0]) {
+    // // move ports out of host bubble
+    // if (st[0] > ed[0]) {
 
-      st[0] -= this.colSize;
-      ed[0] += this.colSize;
-    } else if (st[0] < ed[0]) {
+    //   st[0] -= this.colSize;
+    //   ed[0] += this.colSize;
+    // } else if (st[0] < ed[0]) {
 
-      st[0] += this.colSize;
-      ed[0] -= this.colSize;
-    } else {
+    //   st[0] += this.colSize;
+    //   ed[0] -= this.colSize;
+    // } else {
 
-    }
+    // }
 
-    if (st[1] > ed[1]) {
+    // if (st[1] > ed[1]) {
 
-      st[1] -= this.rowSize;
-      ed[1] += this.rowSize;
-    } else if (st[1] < ed[1]) {
+    //   st[1] -= this.rowSize;
+    //   ed[1] += this.rowSize;
+    // } else if (st[1] < ed[1]) {
 
-      st[1] += this.rowSize;
-      ed[1] -= this.rowSize;
-    } else {
-
-
-    }
-
-    // raw pixel params
-    var xDiff = Math.abs(st[0] - ed[0]);
-    var yDiff = Math.abs(st[1] - ed[1]);
-    var h = ed[1];
-
-    // convert link params to col and row ID's
-    st[0] = Math.floor(st[0] / this.colSize);
-    st[1] = Math.floor(st[1] / this.rowSize);
-
-    ed[0] = Math.floor(ed[0] / this.colSize);
-    ed[1] = Math.floor(ed[1] / this.rowSize);
-
-    // trace link from parent to would be child location
-
-    // set direction modifiers
-    var xDir: number = ed[0] < st[0] ? 1 : -1;
-    var yDir: number = ed[1] < st[1] ? 1 : -1;
-
-    // case on parent and child being horizontal parallels or not
-    if (ed[0] === st[0]) {
-
-      // use y-direction instead
-      var i = ed[1];
-      var hRow = ed[1];
+    //   st[1] += this.rowSize;
+    //   ed[1] -= this.rowSize;
+    // } else {
 
 
-      while (i !== st[1]) {
+    // }
 
-        if (!this.nodeOrigin[hRow][ed[0]].isFree) {
+    // // raw pixel params
+    // var xDiff = Math.abs(st[0] - ed[0]);
+    // var yDiff = Math.abs(st[1] - ed[1]);
+    // var h = ed[1];
 
-          return false;
-        }
+    // // convert link params to col and row ID's
+    // st[0] = Math.floor(st[0] / this.colSize);
+    // st[1] = Math.floor(st[1] / this.rowSize);
 
-        i = i + (1 * yDir);
-        h = h + (this.rowSize * yDir);
-        hRow = Math.floor(h / this.rowSize);
-      }
+    // ed[0] = Math.floor(ed[0] / this.colSize);
+    // ed[1] = Math.floor(ed[1] / this.rowSize);
+
+    // // trace link from parent to would be child location
+
+    // // set direction modifiers
+    // var xDir: number = ed[0] < st[0] ? 1 : -1;
+    // var yDir: number = ed[1] < st[1] ? 1 : -1;
+
+    // // case on parent and child being horizontal parallels or not
+    // if (ed[0] === st[0]) {
+
+    //   // use y-direction instead
+    //   var i = ed[1];
+    //   var hRow = ed[1];
+
+
+    //   while (i !== st[1]) {
+
+    //     if (!this.nodeOrigin[hRow][ed[0]].isFree) {
+
+    //       return false;
+    //     }
+
+    //     i = i + (1 * yDir);
+    //     h = h + (this.rowSize * yDir);
+    //     hRow = Math.floor(h / this.rowSize);
+    //   }
       
-      return true;
-    } else {
+    //   return true;
+    // } else {
 
-      var slope = yDiff / xDiff;
-      var i = ed[0];
-      var hRow = ed[1];
+    //   var slope = yDiff / xDiff;
+    //   var i = ed[0];
+    //   var hRow = ed[1];
 
-      // window.alert("slope is " + slope + " checking " + i + ", " + hRow);
+    //   // window.alert("slope is " + slope + " checking " + i + ", " + hRow);
 
-      while (i !== st[0]) {
+    //   while (i !== st[0]) {
 
-        // for column i, check would be link block
-        if (!this.nodeOrigin[hRow][i].isFree) {
+    //     // for column i, check would be link block
+    //     if (!this.nodeOrigin[hRow][i].isFree) {
 
-          return false;
-        }
+    //       return false;
+    //     }
 
-        i = i + (1 * xDir);
-        h = Math.floor(h + (slope * yDir));
-        hRow = Math.floor(h / this.rowSize);
-      }
+    //     i = i + (1 * xDir);
+    //     h = Math.floor(h + (slope * yDir));
+    //     hRow = Math.floor(h / this.rowSize);
+    //   }
 
-      return true;
-    }
+    //   return true;
+    // }
   }
 
   alloc(scope: MmBlock[], type: string, ori: string, args: any[]): number[] | boolean {

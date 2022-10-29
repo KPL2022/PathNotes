@@ -167,7 +167,7 @@ export class MmLink {
   // stAngle: number[];
   // edAngle: number[];
 
-  constructor(parent: MmNode, child: MmNode, st: number[], ed: number[]) {
+  constructor(child: MmNode, parent: MmNode, st: number[], ed: number[]) {
 
     this.parent = parent;
     this.child = child;
@@ -279,7 +279,7 @@ export class MmNode {
     return Math.abs(point[0] - this.cx) < 75 && Math.abs(point[1] - this.cy) < 37;
   }
 
-  getPortLocation(to: MmNode): number[] {
+  // getPortLocation(to: MmNode): number[] {
 
     // case on location of to relative to self
     // separate x/y gives 2 checks -> find assertion
@@ -300,8 +300,8 @@ export class MmNode {
      */
 
 
-    var res: number[] = [];
-    return res;
+    // var res: number[] = [];
+    // return res;
 
     // normalize the sizing parameters later
 
@@ -339,7 +339,7 @@ export class MmNode {
 
     //   res.push(this.cy);
     // }
-  }
+  // }
 }
 
 export interface RecordEntry {
