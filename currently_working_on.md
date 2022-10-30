@@ -6,11 +6,17 @@
   - curves, complexity unjustified, tracing curves for space alloc is a nightmare
   - forgot what i meant by other stuff, so mark as complete i guess =p
 
-3. once links straight line, update link tracing methods, i think allocLink() mostly?
+[v]3. once links straight line, update link tracing methods, i think allocLink() mostly?
   - put link space usage on the radar
+
+* bubble dims !== border box dims, check for a,b usage when entityWidth/Height should be used
+* lots of 'diff-by-1' kind of directional differences, recheck later checklinkspace stuff
+
+3.5. ownership based free that includes associated links
 
 4. update reasonable space alloc framework with links on radar, the radial search should
     check for link space availability as well to determine if a point in scope can host a child node specifically
+      - iterative deepening with lim >= 1, update out old position as lim structure
 
 5. link command should handle the case that a child is taken from its parent and respond in a 
     reasonable manner

@@ -15,6 +15,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   activeNodes: MmNode[] = [];
   activeLinks: MmLink[] = [];
   nodeOrigin: MmBlock[][] = [];
+  testPoints: number[][] = [];
+
   ids: number = 0;
   frameWidth = 1070;
   frameHeight = 750;
@@ -219,6 +221,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   free(centerPt: number[]) {
 
+    return;
+
     var nodeLeftCol = Math.floor(centerPt[0] / this.colSize) - 1;
     var nodeTopRow = Math.floor(centerPt[1] / this.rowSize) - 1;
 
@@ -236,22 +240,21 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     // TODO: imp
     
     // TODO: normalize bubble dims
-    var a = 45;
-    var b = 32;
+    var entityWidth = 3 * this.colSize;
+    var entityHeight = 2 * this.rowSize;
 
     //divide into 4 regions, vertical y's and 2 x's on the side
   
     var xDist = Math.abs(childCenter[0] - parent.getCx());
+    var yDist = Math.abs(childCenter[1] - parent.getCy());
 
-    // check for membership e x's first
-    if (xDist >= 2 * a) {
+    // case on which axis is further away
+    if (xDist > yDist) {
 
-      return Math.floor((xDist - 2 * a) / this.colSize);
+      return Math.floor((xDist - entityWidth) / this.colSize);
     } else {
 
-      var yDist = Math.abs(childCenter[1] - parent.getCy());
-
-      return Math.floor((yDist - 2 * b) / this.rowSize);
+      return Math.floor((yDist - entityHeight) / this.rowSize);
     }
   }
 
@@ -562,6 +565,65 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     }
   }
 
+  toAnchorLine(stX: number, xDir: number) {
+
+    if (xDir > 0) {
+
+      return stX + (this.colSize - stX % this.colSize);
+    } else {
+
+      return stX - stX % this.colSize;
+    }
+  }
+
+  projectLink(stX: number, stY: number, src: number[], xDir: number, m: number, fX: number, yDir: number) {
+
+    var fY = m * (fX - src[0]) + src[1];
+    var cId = Math.floor(fX / this.colSize);
+
+    if (xDir > 0) {
+
+      cId--;
+    }
+
+    // this.testPoints.push([fX, fY]);
+
+    if (yDir > 0) {
+
+      for (var i = stY; i <= fY; i = i + this.rowSize) {
+
+        if (!this.nodeOrigin[Math.floor(i / this.rowSize)][cId].isFree) {
+  
+          return false;
+        } else {
+  
+          this.nodeOrigin[Math.floor(i / this.rowSize)][cId].isFree = false;
+        }
+      }
+    } else {
+
+      for (var i = stY; i >= fY; i = i - this.rowSize) {
+
+        var rId = Math.floor(i / this.rowSize);
+
+        if (i % this.rowSize === 0) {
+
+          rId--;
+        }
+
+        if (!this.nodeOrigin[rId][cId].isFree) {
+  
+          return false;
+        } else {
+  
+          this.nodeOrigin[rId][cId].isFree = false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   checkLinkSpace(type: string, parent: MmNode, tfBlk: MmBlock): boolean {
 
     if (type !== 'child node') {
@@ -576,13 +638,21 @@ export class MmCanvasComponent implements OnInit, OnChanges {
      * pseudo code:
      * 
      * 1. obtain port locations
-     * 2. based on ports, compute slope m, handle dX = 0 case
-     * 3. trace out 0.5 unit from ports as start/end points
-     * 4. for every 1 unit in col or row, trace by slope change in dimensions
-     * 5. bound new sample to cell and check if free
-     *      - early return false on false
-     * 6. if all free -> return true
+     * 2. handle dX = 0 case, if otherwise, compute slope m from ports
+     * 3. find intersection between hode node frame line and port, set as start/end points
+     * 4. for each progression in x from start_x -> end_x
+     *      - compare current y val to anchor line's y val for dY
+     *          - itr over blocks contained in dY's worth of change
+     *              - if not free -> early return false
+     *              - if free -> do nothing
+     * 5. if not return by end -> return true
      */
+
+    // normalize entity params later
+    var a = 45;
+    var b = 32;
+    var entityWidth = 3;
+    var entityHeight = 2;
 
     // create dummy node
     var entityCore: number[] = [];
@@ -597,12 +667,14 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     var st = portLocationPack[0];
     var ed = portLocationPack[1];
 
-    // compute slope m
+    // handle dX = 0 case
     if (dummy.getCx() === parent.getCx()) {
 
-
+      // TODO: imp
+      return false;
     } else {
 
+      // compute slope m
       var m = (dummy.getCy() - parent.getCy()) / (dummy.getCx() - parent.getCx());
 
       var xDir!: number;
@@ -624,7 +696,45 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         yDir = 1;
       }
 
-      // trace out 0.5 units for start/end
+      // find intersection between ports and host node frame lines
+      // ports e line: y - st[1] = m (x - st[0])
+      // host node frame lines: y = dummy.getCy() + yDir * b and y = parent.getCy() + -1 * yDir * b
+      var stY = dummy.getCy() + yDir * this.rowSize;
+      var stX = (stY + m * st[0] - st[1]) / m;
+
+      var edY = parent.getCy() + -1 * yDir * this.rowSize;
+      var edX = (edY + m * st[0] - st[1]) / m;
+
+      this.testPoints.push([stX, stY]);
+      this.testPoints.push([edX, edY]);
+
+      // handle end points first
+      if (!this.projectLink(stX, stY, st, xDir, m, this.toAnchorLine(stX, xDir), yDir) || 
+            !this.projectLink(edX, edY, st, -1 * xDir, m, this.toAnchorLine(edX, -1 * xDir), -1 * yDir)) {
+
+        return false;
+      }
+
+      // check anchor lines in between
+      if (xDir > 0) {
+
+        for (var i = this.toAnchorLine(stX, xDir); i < this.toAnchorLine(edX, -1 * xDir); i = i + this.colSize) {
+
+          if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i + this.colSize, yDir)) {
+
+            return false;
+          }
+        }
+      } else {
+
+        for (var i = this.toAnchorLine(stX, xDir); i > this.toAnchorLine(edX, -1 * xDir); i = i - this.colSize) {
+
+          if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i - this.colSize, yDir)) {
+
+            return false;
+          }
+        }
+      }
     }
 
     return true;
@@ -755,6 +865,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
       if (ori === 'tf') {
 
+        //this.testPoints.push([scope[i].getStart(), scope[i].blockId * scope[i].dispHeight])
+
         if (this.checkLinkSpace(type, args[0] as MmNode, scope[i])
             && this.containable(scope[i], entityWidth, entityHeight, ori)) {
 
@@ -859,6 +971,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       // compute radial search limit from old child position
       var lim = this.distBetween(parent, childCenter);
 
+      // window.alert(lim);
+
       var pLeftCol = Math.floor(parent.getCx() / colSize) - 1;
       var pRightCol = pLeftCol + 2;
       var pTopRow = Math.floor(parent.getCy() / rowSize) - 1;
@@ -942,8 +1056,10 @@ export class MmCanvasComponent implements OnInit, OnChanges {
           }
         }
 
-        // shuffle order
-        cands = this.shuffleOrder(cands);
+        // // shuffle order
+        // cands = this.shuffleOrder(cands);
+
+        // cands.forEach((blk: MmBlock) => {this.testPoints.push([blk.getStart(), blk.blockId * blk.dispHeight])});
 
         var ret: number[] | boolean = this.alloc(cands, 'child node', 'tf', [parent]);
 
