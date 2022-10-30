@@ -1,4 +1,4 @@
-import { Xmb } from '@angular/compiler';
+import { TmplAstBoundAttribute, Xmb } from '@angular/compiler';
 import { Component, OnInit, Input, OnChanges, SimpleChanges, ApplicationRef } from '@angular/core';
 
 import { MmBlock, MmLink, MmNode, OperatorName, SystemCommand } from '../DataTypes';
@@ -16,6 +16,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   activeLinks: MmLink[] = [];
   nodeOrigin: MmBlock[][] = [];
   testPoints: number[][] = [];
+  tmpLinkBlk: MmBlock[] = [];
 
   ids: number = 0;
   frameWidth = 1070;
@@ -187,6 +188,9 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         link.st = portLocationPack[0];
         link.ed = portLocationPack[1];
 
+        this.freeLink(link);
+        link.setBlks(this.tmpLinkBlk);
+
         // rec to child
         this.tmpRecLinkGen(link.child);
       }
@@ -219,9 +223,14 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   }
 
-  free(centerPt: number[]) {
+  freeLink(link: MmLink) {
 
-    return;
+    link.blks.forEach((blk: MmBlock) => {blk.isFree = true;});
+  }
+
+  free(node: MmNode) {
+
+    var centerPt: number[] = [node.getCx(), node.getCy()];
 
     var nodeLeftCol = Math.floor(centerPt[0] / this.colSize) - 1;
     var nodeTopRow = Math.floor(centerPt[1] / this.rowSize) - 1;
@@ -280,7 +289,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     // TODO: imp special return for no result change
     if (newCs[0] !== oldCx || newCs[1] !== oldCy) {
 
-      this.free([oldCx, oldCy]);
+      this.free(child);
 
       child.setCx(newCs[0]);
       child.setCy(newCs[1]);
@@ -407,6 +416,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     // this.allocLink(st, ed);
 
     var newLink = new MmLink(child, parent, st, ed);
+    newLink.setBlks(this.tmpLinkBlk);
+
     this.activeLinks.push(newLink);
     child.setParentLink(newLink);
     parent.getChildrenLinks().push(newLink);
@@ -576,7 +587,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     }
   }
 
-  projectLink(stX: number, stY: number, src: number[], xDir: number, m: number, fX: number, yDir: number) {
+  projectLink(stX: number, stY: number, src: number[], xDir: number, m: number, fX: number, yDir: number, blks: MmBlock[]) {
 
     var fY = m * (fX - src[0]) + src[1];
     var cId = Math.floor(fX / this.colSize);
@@ -597,7 +608,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
           return false;
         } else {
   
-          this.nodeOrigin[Math.floor(i / this.rowSize)][cId].isFree = false;
+          blks.push(this.nodeOrigin[Math.floor(i / this.rowSize)][cId]);
         }
       }
     } else {
@@ -616,7 +627,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
           return false;
         } else {
   
-          this.nodeOrigin[rId][cId].isFree = false;
+          blks.push(this.nodeOrigin[rId][cId]);
         }
       }
     }
@@ -624,7 +635,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     return true;
   }
 
-  checkLinkSpace(type: string, parent: MmNode, tfBlk: MmBlock): boolean {
+  checkLinkSpace(type: string, parent: MmNode, tfBlk: MmBlock, blks: MmBlock[]): boolean {
 
     if (type !== 'child node') {
 
@@ -709,8 +720,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       this.testPoints.push([edX, edY]);
 
       // handle end points first
-      if (!this.projectLink(stX, stY, st, xDir, m, this.toAnchorLine(stX, xDir), yDir) || 
-            !this.projectLink(edX, edY, st, -1 * xDir, m, this.toAnchorLine(edX, -1 * xDir), -1 * yDir)) {
+      if (!this.projectLink(stX, stY, st, xDir, m, this.toAnchorLine(stX, xDir), yDir, blks) || 
+            !this.projectLink(edX, edY, st, -1 * xDir, m, this.toAnchorLine(edX, -1 * xDir), -1 * yDir, blks)) {
 
         return false;
       }
@@ -720,7 +731,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
         for (var i = this.toAnchorLine(stX, xDir); i < this.toAnchorLine(edX, -1 * xDir); i = i + this.colSize) {
 
-          if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i + this.colSize, yDir)) {
+          if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i + this.colSize, yDir, blks)) {
 
             return false;
           }
@@ -729,7 +740,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
         for (var i = this.toAnchorLine(stX, xDir); i > this.toAnchorLine(edX, -1 * xDir); i = i - this.colSize) {
 
-          if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i - this.colSize, yDir)) {
+          if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i - this.colSize, yDir, blks)) {
 
             return false;
           }
@@ -867,8 +878,16 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
         //this.testPoints.push([scope[i].getStart(), scope[i].blockId * scope[i].dispHeight])
 
-        if (this.checkLinkSpace(type, args[0] as MmNode, scope[i])
+        var linkBlks: MmBlock[] = [];
+
+        if (this.checkLinkSpace(type, args[0] as MmNode, scope[i], linkBlks)
             && this.containable(scope[i], entityWidth, entityHeight, ori)) {
+
+          if (type === "child node") {
+
+            linkBlks.forEach((blk: MmBlock) => {blk.isFree = false});
+            this.tmpLinkBlk = linkBlks;
+          }
 
           var entityCore: number[] = [];
           entityCore[0] = scope[i].getStart() + Math.floor((scope[i].getEnd() - scope[i].getStart()) * entityWidth / 2);

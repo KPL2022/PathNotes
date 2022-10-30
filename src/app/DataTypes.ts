@@ -159,6 +159,8 @@ export class MmBlock {
 
 export class MmLink {
 
+  blks: MmBlock[] = [];
+
   parent: MmNode;
   child: MmNode;
 
@@ -176,6 +178,11 @@ export class MmLink {
     // this.stAngle = stAngle;
     // this.edAngle = edAngle;
     this.ed = ed;
+  }
+
+  setBlks(blk: MmBlock[]) {
+
+    this.blks = blk;
   }
 
   getStStr() {
@@ -205,7 +212,8 @@ export class MmNode {
   private cy: number;
   private txt: string;
   private id: string;
-  
+  private blks: MmBlock[] = [];
+
   private parentLink: MmLink | null;
   private childrenLinks: MmLink[] = [];
 
@@ -217,6 +225,16 @@ export class MmNode {
     this.cy = y;
     this.txt = txt;
     this.id = id;
+  }
+
+  getBlks() {
+
+    return this.blks;
+  }
+
+  setBlks(blks: MmBlock[]) {
+
+    this.blks = blks;
   }
 
   setParentLink(newLink: MmLink) {

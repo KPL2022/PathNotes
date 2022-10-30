@@ -12,7 +12,12 @@
 * bubble dims !== border box dims, check for a,b usage when entityWidth/Height should be used
 * lots of 'diff-by-1' kind of directional differences, recheck later checklinkspace stuff
 
+<!-- 3.4 generative order update, clean up the src code -->
+
 3.5. ownership based free that includes associated links
+
+3.6. recursive child relocate needs to be perform in an atomic manner
+      - else not enough context to know if child's child will be deadlocked out of space
 
 4. update reasonable space alloc framework with links on radar, the radial search should
     check for link space availability as well to determine if a point in scope can host a child node specifically
