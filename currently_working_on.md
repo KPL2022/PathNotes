@@ -1,3 +1,6 @@
+------------------------------------------------------------------------------------------------------
+pre generative order update items:
+
 [v]1. update MmNode's getPortLocation method for straightline links
   - mathematically derive port location thru intersection computation
   - move getPortLocation() out of object, as standalone in canvas comp for now
@@ -9,10 +12,48 @@
 [v]3. once links straight line, update link tracing methods, i think allocLink() mostly?
   - put link space usage on the radar
 
-* bubble dims !== border box dims, check for a,b usage when entityWidth/Height should be used
-* lots of 'diff-by-1' kind of directional differences, recheck later checklinkspace stuff
+------------------------------------------------------------------------------------------------------
+3.4 generative order update:
 
 <!-- 3.4 generative order update, clean up the src code -->
+  - start with drawing out the structure mm
+
+3.4.extras
+  - getting canvas onChange to proc even with repeated user input
+  - consider how 3+ bullet points in this doc can be incorporated into the GO update
+  - bubble dims !== border box dims, check for a,b usage when entityWidth/Height should be used
+  - lots of 'diff-by-1' kind of directional differences, recheck later checklinkspace stuff
+
+3.4.1 mm-service 
+  - clean up src code -> update and trim comments
+  - rework buildExecutionTree() logic
+    - for loop -> while
+    - reconsider how assertions around cmd name and cmd lvls are done -> really necessary to call helper methods? what about HT?
+    - update logic to more reasonably respond to user expression with nested commands
+      - prioritize execution order based on cmd lvl, not left->right flat ordering
+
+3.4.2 data-typing
+  - review data-typing decisions to better support canvas functions
+    - clean up src code, update and trim comments
+    - compartmentalize data-typing file into directory format
+      - split into smaller files, each file for typing of a specific purpose
+    - for canvas related data types
+      - review obj functions, update or trim as necessary
+      - check how reference storing is handled across the framework
+
+3.4.3 mm-canvas interpretation response functions
+  - clean up src code, update or trim comments as necessary
+  - feather out the canvas scope testing framework
+
+3.4.4 normalizing display window and cell related dimension settings
+
+3.4.5 review logic used in response functions
+
+3.4.6 restoring program internal coherence
+  - - reflect data-typing changes to related components to restore program internal coherence
+
+------------------------------------------------------------------------------------------------------
+post processing & misc items:
 
 3.5. ownership based free that includes associated links
 
