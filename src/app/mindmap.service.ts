@@ -225,19 +225,6 @@ export class MindmapService {
 
       // return self as ret val
       return ret;
-
-      // // found cmd, case on cmd type unary or binary
-      // if (cmdDef.type === 'binary') {
-
-      //   operands.push(this.buildExecutionTree(rt, src.substring(0, idx - cmdDef.symbol.length).trim()));
-      //   operands.push(this.buildExecutionTree(rt, src.substring(idx).trim()));
-      // } else {
-
-      //   // assert type === 'unary'
-      //   operands.push(this.buildExecutionTree(rt, src.substring(idx).trim()));
-      // }
-
-      // return new SystemCommand(optName, cmdLvl, operands);
     }
   }
 

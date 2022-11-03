@@ -54,6 +54,7 @@ pre generative order update items:
 3.4.3 mm-canvas interpretation response functions
   - clean up src code, update or trim comments as necessary
     [v] trim dated comments
+  - update to restore coherence with the execution tree framework 
   - feather out the canvas scope testing framework
 
 3.4.4 normalizing display window and cell related dimension settings
@@ -65,6 +66,8 @@ pre generative order update items:
 
 ------------------------------------------------------------------------------------------------------
 post processing & misc items:
+
+3.4.a try to in best effort manner preserve user bubble orientation when re-allocing for more reasonable space usage
 
 3.5. ownership based free that includes associated links
 
