@@ -61,17 +61,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         this.nodeOrigin[i].push(new MmBlock(st, st + colSize, rowSize, i));  
       }
     }
-
-    // for (var i = 0; i < Math.floor(frameWidth / colSize); i++) {
-
-    //   for (var j = 0; j < Math.floor(frameHeight / rowSize); j++) {
-
-    //     var x = i * colSize + Math.floor(colSize / 2);
-    //     var y = j * rowSize + Math.floor(rowSize / 2);
-
-    //     this.nodeOrigin.push(new MmNode(x, y, '', '-1'));
-    //   }
-    // }
   }
 
   ngOnInit(): void {
@@ -87,13 +76,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   interpretCmd(sysCmd: SystemCommand) {
 
     // TODO: imp
-    // this.collisionAwarePlacement(userCmd[0]);
-    
-    // while (this.nodeOrigin.length !== 0) {
 
-    //   this.activateNode('test');
-    // }
-
+    // testing
     console.log(sysCmd);
     this.traceExecutionTree(sysCmd);
   }
@@ -412,71 +396,12 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     var st: number[] = portLocationPack[0];
     var ed: number[] = portLocationPack[1];
 
-    // var stPack: number[][] = child.getPortLocation(parent);
-    // var edPack: number[][] = parent.getPortLocation(child);
-
-    // var st: number[] = stPack[0];
-    // var stAngle: number[] = stPack[1];
-    // var edAngle: number[] = edPack[1];
-    // var ed: number[] = edPack[0];
-
-    // this.allocLink(st, ed);
-
     var newLink = new MmLink(child, parent, st, ed);
     newLink.setBlks(this.tmpLinkBlk);
 
     this.activeLinks.push(newLink);
     child.setParentLink(newLink);
     parent.getChildrenLinks().push(newLink);
-
-    // var xOffset = 30;
-    // var yOffset = 8;
-
-    // // assert a && b are collision free
-    // // ignore a parallel b in x or y axis cases
-    // if (a.getCx() > b.getCx()) {
-
-    //   if (a.getCy() > b.getCy()) {
-
-    //     // a is bottom right of b
-        
-    //     // link a tf corner to b br corner
-    //     st = [a.getCx() - xOffset, a.getCy() - yOffset];
-    //     ed = [b.getCx() + xOffset, b.getCy() + yOffset];
-    //     stAngle = [st[0], st[1] - 50];
-    //     edAngle = [ed[0] + 50, ed[1]];
-    //   } else {
-
-    //     // a is top right of b
-
-    //     // link a bl to b tr
-    //     st = [a.getCx() - xOffset, a.getCy() + yOffset];
-    //     ed = [b.getCx() + xOffset, b.getCy() - yOffset];
-    //     stAngle = [st[0], st[1] + 50];
-    //     edAngle = [ed[0] + 50, ed[1]];
-    //   }
-    // } else {
-
-    //   if (a.getCy() > b.getCy()) {
-
-    //     // a is bottom left of b
-
-    //     // link a tr to b bl
-    //     st = [a.getCx() + xOffset, a.getCy() - yOffset];
-    //     ed = [b.getCx() - xOffset, b.getCy() + yOffset];
-    //     stAngle = [st[0] + 50, st[1]];
-    //     edAngle = [ed[0], ed[1] + 50];
-    //   } else {
-
-    //     // a is top left of b
-
-    //     // link a br to b tl
-    //     st = [a.getCx() + xOffset, a.getCy() + yOffset];
-    //     ed = [b.getCx() - xOffset, b.getCy() - yOffset];
-    //     stAngle = [st[0] + 50, st[1]];
-    //     edAngle = [ed[0], ed[1] - 50];
-    //   }
-    // }
   }
 
   generateNode(userInput: string) {
@@ -883,8 +808,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
       if (ori === 'tf') {
 
-        //this.testPoints.push([scope[i].getStart(), scope[i].blockId * scope[i].dispHeight])
-
         var linkBlks: MmBlock[] = [];
 
         if (this.checkLinkSpace(type, args[0] as MmNode, scope[i], linkBlks)
@@ -1084,8 +1007,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
         // // shuffle order
         // cands = this.shuffleOrder(cands);
-
-        // cands.forEach((blk: MmBlock) => {this.testPoints.push([blk.getStart(), blk.blockId * blk.dispHeight])});
 
         var ret: number[] | boolean = this.alloc(cands, 'child node', 'tf', [parent]);
 

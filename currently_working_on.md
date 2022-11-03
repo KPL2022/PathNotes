@@ -23,7 +23,8 @@ pre generative order update items:
   - consider how 3+ bullet points in this doc can be incorporated into the GO update
   - bubble dims !== border box dims, check for a,b usage when entityWidth/Height should be used
   - lots of 'diff-by-1' kind of directional differences, recheck later checklinkspace stuff
-  - - review src code fx ordering for 3.4.2 & +
+  - review src code fx ordering for 3.4.2 & +
+  - document assertions like connectedness of commands e user input as premise of fx like buildextree etc etc
 
 3.4.1 mm-service 
   [v] clean up src code -> update and trim comments
@@ -40,7 +41,7 @@ pre generative order update items:
     - make generate inference work with stuff like edit 
   
   - review buildExecutionTree and resolve smaller issues, including what is above
-
+  
 3.4.2 data-typing
   - review data-typing decisions to better support canvas functions
     - clean up src code, update and trim comments
@@ -52,6 +53,7 @@ pre generative order update items:
 
 3.4.3 mm-canvas interpretation response functions
   - clean up src code, update or trim comments as necessary
+    [v] trim dated comments
   - feather out the canvas scope testing framework
 
 3.4.4 normalizing display window and cell related dimension settings
