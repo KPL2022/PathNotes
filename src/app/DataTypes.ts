@@ -81,6 +81,7 @@ export interface CommandDef {
   symbol: string;
   type: string;
   options: OptionDef[];
+  index: number;
 }
 
 export interface OptionDef {
@@ -94,13 +95,24 @@ export class SystemCommand {
 
   private operatorName: OperatorName;
   private cmdLvl: number;
-  private operands: string[] | SystemCommand[];
+  private operands: string[] | SystemCommand[] = [];
+  private index: number = -1;
 
   constructor(optName: OperatorName, cmdLvl: number, operands: string[] | SystemCommand[]) {
 
     this.operatorName = optName;
     this.cmdLvl = cmdLvl;
     this.operands = operands;
+  }
+
+  getIndex() {
+
+    return this.index;
+  }
+
+  setIndex(newIdx: number) {
+
+    this.index = newIdx;
   }
 
   getOperatorName() {

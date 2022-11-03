@@ -119,7 +119,14 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       // switch: edit, remove, highlight
       if (cmd.getOperatorName() === OperatorName.edit) {
 
+        var node: MmNode | undefined = this.activeNodes.find((val: MmNode) => val.getId() === (args[0] as MmNode).getId());
 
+        if (node !== undefined) {
+
+          node.setTxt((args[1] as MmNode).getTxt());
+        }
+
+        return args[0] as MmNode;
       } else if (cmd.getOperatorName() === OperatorName.remove) {
 
 
@@ -199,7 +206,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   traceExecutionTree(rt: SystemCommand) {
 
-    if (rt.getCmdLvl() <= 1) {
+    if (rt.getCmdLvl() === 0) {
 
       // <= atomic level commands: 0-generate, 1-edit, remove, highlight
       return this.execute(rt, rt.getOperands());

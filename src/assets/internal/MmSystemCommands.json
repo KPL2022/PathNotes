@@ -14,7 +14,8 @@
         "default": "uni",
         "values": ["uni", "bi", "eq"]
       }
-    ]
+    ],
+    "index": -1
   },
   {
     "name": "unlink",
@@ -26,7 +27,8 @@
         "default": "branch",
         "values": ["node", "branch"]
       }
-    ]
+    ],
+    "index": -1
   },
   {
     "name": "remove",
@@ -38,7 +40,8 @@
         "default": "node",
         "values": ["node", "branch"]
       }
-    ]
+    ],
+    "index": -1
   },
   {
     "name": "edit",
@@ -50,18 +53,21 @@
         "default": "text",
         "values": ["text", "link angle", "link type"]
       }
-    ]
+    ],
+    "index": -1
   },
   {
     "name": "merge",
     "symbol": "+",
     "type": "binary",
-    "options": []
+    "options": [],
+    "index": -1
   },
   {
     "name": "highlight",
     "symbol": "^",
     "type": "unary",
-    "options": []
+    "options": [],
+    "index": -1
   }
 ]
