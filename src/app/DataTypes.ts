@@ -10,48 +10,46 @@ export enum OperatorName {
   unknown = "unknown"
 }
 
-export function getOptName(name: string) {
+export enum OperatorSymbol {
 
-  if (name === 'merge') {
-
-    return OperatorName.merge;
-  } else if (name === 'link') {
-
-    return OperatorName.link;
-  } else if (name === 'unlink') {
-
-    return OperatorName.unlink;
-  } else if (name === 'edit') {
-
-    return OperatorName.edit;
-  } else if (name === 'remove') {
-
-    return OperatorName.remove;
-  } else if (name === 'highlight') {
-
-    return OperatorName.highlight;
-  } else {
-
-    return OperatorName.unknown;
-  }
+  merge = "+",
+  link = "->",
+  unlink = "-x",
+  generate = "undef",
+  edit = "=",
+  remove = "~",
+  highlight = "^",
+  unknown = "undef"
 }
 
-export function getOperatorLevel(name: OperatorName) {
+// special command level for generate command to enable recognition by inference
+export enum OperatorLevel {
 
-  if (name === OperatorName.merge) {
+  generate = 0
+}
 
-    return 3;
-  } else if (name === OperatorName.link || name === OperatorName.unlink) {
+export enum OperatorType {
 
-    return 2;
-  } else if (name === OperatorName.generate) {
+  binary = "bi",
+  unary = "uni"
+}
 
-    return 0;
-  } else {
 
-    // edit, remove, or highlight
-    return 1;
-  }
+export interface CommandDef {
+
+  name: OperatorName;
+  symbol: OperatorSymbol;
+  cmdLvl: number;
+  type: OperatorType;
+  options: OptionDef[];
+  index: number;
+}
+
+export interface OptionDef {
+
+  name: string;
+  default: string;
+  values: string[];
 }
 
 export class TrieNode {
@@ -75,44 +73,17 @@ export class TrieNode {
   }
 }
 
-export interface CommandDef {
-
-  name: string;
-  symbol: string;
-  type: string;
-  options: OptionDef[];
-  index: number;
-}
-
-export interface OptionDef {
-
-  name: string;
-  default: string;
-  values: string[];
-}
-
 export class SystemCommand {
 
   private operatorName: OperatorName;
   private cmdLvl: number;
   private operands: string[] | SystemCommand[] = [];
-  private index: number = -1;
 
   constructor(optName: OperatorName, cmdLvl: number, operands: string[] | SystemCommand[]) {
 
     this.operatorName = optName;
     this.cmdLvl = cmdLvl;
     this.operands = operands;
-  }
-
-  getIndex() {
-
-    return this.index;
-  }
-
-  setIndex(newIdx: number) {
-
-    this.index = newIdx;
   }
 
   getOperatorName() {

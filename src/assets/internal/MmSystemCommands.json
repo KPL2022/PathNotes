@@ -2,7 +2,8 @@
   {
     "name": "link",
     "symbol": "->",
-    "type": "binary",
+    "cmdLvl": 2,
+    "type": "bi",
     "options": [
       {
         "name": "link angle",
@@ -20,7 +21,8 @@
   {
     "name": "unlink",
     "symbol": "-x",
-    "type": "binary",
+    "cmdLvl": 2,
+    "type": "bi",
     "options": [
       {
         "name": "scope",
@@ -33,7 +35,8 @@
   {
     "name": "remove",
     "symbol": "~",
-    "type": "unary",
+    "cmdLvl": 1,
+    "type": "uni",
     "options": [
       {
         "name": "scope",
@@ -46,7 +49,8 @@
   {
     "name": "edit",
     "symbol": "=",
-    "type": "binary",
+    "cmdLvl": 1,
+    "type": "bi",
     "options": [
       {
         "name": "attr",
@@ -59,14 +63,16 @@
   {
     "name": "merge",
     "symbol": "+",
-    "type": "binary",
+    "cmdLvl": 3,
+    "type": "bi",
     "options": [],
     "index": -1
   },
   {
     "name": "highlight",
     "symbol": "^",
-    "type": "unary",
+    "cmdLvl": 1,
+    "type": "uni",
     "options": [],
     "index": -1
   }

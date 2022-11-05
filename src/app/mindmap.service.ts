@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-import { CommandDef, OptionDef, SystemCommand, TrieNode, OperatorName, getOptName, getOperatorLevel } from './DataTypes';
-import { PercentPipe } from '@angular/common';
+import { CommandDef, OptionDef, SystemCommand, TrieNode, OperatorName, OperatorLevel, OperatorType } from './DataTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -53,7 +52,7 @@ export class MindmapService {
       // check if already exists
         // if so, navigate substr
         // else, create and navigate substr
-      var nxtChar = src.substring(0, 1);
+      var nxtChar = src.charAt(0);
       var nextNode = rt.next.find((nd: TrieNode) => nd.val === nxtChar);
 
       if (nextNode === undefined) {
@@ -81,81 +80,109 @@ export class MindmapService {
     return ret[0];
   }
 
-  // TODO: imp order of operations by hierarchy
-  // set root to be highest operator found in user input, split from there
-  // keep partial order state, restore order after introducing new operator at each encounter 
+  /**
+   * separating out ordering from producing the execution tree
+   * 
+   * pseudo code:
+   * 
+   * 0. mats & invariants:
+   *  - return either self or left operand as generate wrapper
+   *  - pass ref to prev neighbor
+   *  - param passing global head
+   *    - init with first cmd no prev case
+   *    - after operands finished, check self for head update
+   * 
+   * 1. goals are to produce user input into operator cmds and
+   *    set execution order of cmds by lvl of cmd
+   * 
+   * for producing cmds:
+   *  1. try to find operator in user input
+   *  2. if not found, return base case generate wrapper
+   *  3. if found, process operator into sys cmd:
+   *      - get operator name, cmd lvl
+   *      - get operands with ordering in consideration
+   *      - switch on opt typing cases
+   *
+   * for ordering:
+   *  1. use parameter passing for global head
+   *  2. setting return values between neighboring cmds by comp cmd lvl
+   *        - return value is either self, or string in between cmds with generate wrapper
+   *        - handle first cmd no previous case
+   *
+   * -----------------
+   * param: rt, src, head, prev
+   * 
+   * 1. string search with trie on user input 'src'
+   * 
+   * init: idx var, sys cmd var, cur trie node var
+   * 
+   * while (not at end of src && sys cmd empty) 
+   *  - base case check if cur node is leaf node -> found opt
+   *    - create system cmd obj & fill with placeholders
+   *  - check if cur src char e cur.next
+   *    - if so move to next trie node
+   *    - else reset cur -> rt and check cur src char again
+   * 
+   * 2. switch on sys cmd is empty
+   *  - if empty -> return base case generate wrapper
+   *  - else
+   * 
+   * init: left opt, return val variables
+   * 
+   *    - case on prev === null
+   *      - case on self opt typing
+   *        - if prev === null -> type = binary then left opt for self, recurse for right opt
+   *          -> type = unary then simply recurse for right opt
+   *      - init global head here
+   *    - if prev !== null
+   *      - case on self opt typing
+   *        - if prev !== null -> typing = binary then case on prev vs self cmd lvl
+   *          - if self cmd lvl >= prev cmd lvl -> use prev for left opt, ret left opt to prev
+   *          - if self cmd lvl < prev cmd lvl -> use left opt for left opt, return self
+   *        - if typing = unary -> recursve for right operand
+   *    - after operands feathered out, check self for head update
+   */
   buildExecutionTree(rt: TrieNode, src: string, head: SystemCommand[], prev: SystemCommand | null): SystemCommand {
 
-      /**
-       * separating out ordering from producing the execution tree
-       * 
-       * pseudo code:
-       * 
-       * 1. case on finding operator in src
-       *  - if not found -> base case return
-       *  - else -> create self sys cmd obj, then:
-       *  
-       *  -case on cmd type for left/right option enable, then:
-       *    - if prev !== null -> compare self cmd lvl to prev cmd lvl
-       *        - if self is child -> use left operand for self
-       *        - else
-       *          - provide left operand as return eventually to parent
-       *          - set return of child as own left operand 
-       *          - check if self is head worthy
-       *        - set return of right call as right operand
-       *        - return self or left operand based on prev decision
-       * 
-       *    - if prev === null
-       *      - set left operand as self left operand
-       *      - use right return as right operand
-       *      - return self or left operand in the same sense as above case
-       * 
-       *  - if cmd type is binary:
-       *    - case on if prev !== null to set left operand and return value
-       *    - if prev !== null -> check self is head worthy
-       *   
-       *  - for both binary and unary cmd types:
-       *    - use right return as right operand
-       *    - return preset value upward
-       */
-
+    var cur: TrieNode = rt;
     var cmdDef: CommandDef | null = null;
-    var idx = -1;
-    var curNode = rt;
+    var idx: number = 0;
 
-    for (var i = 0; i < src.length && cmdDef === null; i++) {
+    while (idx < src.length && cmdDef === null) {
 
-      if (curNode.next.length === 0) {
+      if (cur.isCommand) {
 
-        // mark cmd
-        cmdDef = curNode.commandInfo;
-        idx = i;
+        // generate system command
+        cmdDef = cur.commandInfo as CommandDef;
+        cmdDef.index = idx;
       } else {
 
-        var nxtChar = src.charAt(i);
-        var nextNode = curNode.next.find((nd: TrieNode) => nd.val === nxtChar);
+        var curSrcChar = src.charAt(idx);
+        var nextNode: TrieNode | undefined = cur.next.find((nd: TrieNode) => nd.val === curSrcChar);
 
-        if (nextNode === undefined) {
+        if (nextNode !== undefined) {
 
-          curNode = rt;
+          // found next node, move there
+          cur = nextNode;
+        } else {
 
-          nextNode = curNode.next.find((nd: TrieNode) => nd.val === nxtChar);
+          cur = rt;
+
+          nextNode = cur.next.find((nd: TrieNode) => nd.val === curSrcChar);
 
           if (nextNode !== undefined) {
 
-            curNode = nextNode;
+            cur = nextNode;
           }
-        } else {
-
-          curNode = nextNode;
         }
       }
+      idx++;
     }
 
     if (cmdDef === null) {
 
-      // base case, return lvl0 generate command for string
-      var ret: SystemCommand = new SystemCommand(OperatorName.generate, getOperatorLevel(OperatorName.generate), [src]);
+      // base case, return generate wrapper
+      var ret = new SystemCommand(OperatorName.generate, OperatorLevel.generate, [src.trim()]);
 
       if (prev === null) {
 
@@ -165,66 +192,48 @@ export class MindmapService {
       return ret;
     } else {
 
-       var optName: OperatorName = getOptName(cmdDef.name);
-       var cmdLvl: number = getOperatorLevel(optName);
-       var operands: SystemCommand[] = [];
+      // create system command container with info from cmdDef
+      var operands: SystemCommand[] = [];
 
-       var selfObj: SystemCommand = new SystemCommand(optName, cmdLvl, operands);
-       selfObj.setIndex(idx);
-       
-       if (prev === null) {
+      var sysCmd = new SystemCommand(cmdDef.name, cmdDef.cmdLvl, operands);
+      
+      // case return on various things
+      var leftOpt = new SystemCommand(OperatorName.generate, OperatorLevel.generate, [src.substring(0, cmdDef.index - cmdDef.symbol.length).trim()]);
+      var retVal = leftOpt;
 
-        head[0] = selfObj;
-       }
+      if (prev === null) {
 
-       var ret!: SystemCommand;
-
-      // make decisions about left operand
-      if (cmdDef.type === 'binary') {
-
-        if (prev !== null) {
-
-          var leftOpt: SystemCommand = new SystemCommand(OperatorName.generate, getOperatorLevel(OperatorName.generate), [src.substring(0, idx - cmdDef.symbol.length).trim()]);
-
-          if (prev.getCmdLvl() > cmdLvl) {
-
-            // self is child, use left operand for self, set self as return for parent
-            operands.push(leftOpt);
-            ret = selfObj;
-          } else {
-
-            // self is parent, give left operand as return, use child for own return
-            operands.push(prev);
-            ret = leftOpt;
-
-            // check if self head worthy
-            if (head.length === 0) {
-
-              head.push(selfObj);
-            } else {
-
-              if (head[0].getCmdLvl() <= selfObj.getCmdLvl()) {
-
-                head[0] = selfObj;
-              }
-            }
-          }
-        } else {
-
-          // prev === null, use leftOpt for self, return self
-          operands.push(new SystemCommand(OperatorName.generate, getOperatorLevel(OperatorName.generate), [src.substring(0, idx - cmdDef.symbol.length).trim()]));
-          ret = selfObj;
+        if (cmdDef.type === OperatorType.binary) {
+          operands.push(leftOpt);
+          retVal = sysCmd;
         }
+
+        head[0] = sysCmd;
       } else {
 
-        ret = selfObj;
+        // assert prev !== null here
+        if (cmdDef.type === OperatorType.binary) {
+
+          if (sysCmd.getCmdLvl() >= prev.getCmdLvl()) {
+
+            operands.push(prev);
+          } else {
+
+            operands.push(leftOpt);
+            retVal = sysCmd;
+          }
+        }
       }
 
-      // set right return as right operand
-      operands.push(this.buildExecutionTree(rt, src.substring(idx).trim(), head, selfObj));
+      operands.push(this.buildExecutionTree(rt, src.substring(cmdDef.index).trim(), head, sysCmd));
+      
+      // check self for head update
+      if (sysCmd.getCmdLvl() > head[0].getCmdLvl()) {
 
-      // return self as ret val
-      return ret;
+        head[0] = sysCmd;
+      }
+
+      return retVal;
     }
   }
 

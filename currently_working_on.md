@@ -26,10 +26,10 @@ pre generative order update items:
   - review src code fx ordering for 3.4.2 & +
   - document assertions like connectedness of commands e user input as premise of fx like buildextree etc etc
 
-3.4.1 mm-service 
+[v] 3.4.1 mm-service 
   [v] clean up src code -> update and trim comments
   [v] review src code fx ordering
-  - rework buildExecutionTree() logic
+  [v] rework buildExecutionTree() logic
     - for loop -> while
     - reconsider how assertions around cmd name and cmd lvls are done -> really necessary to call helper methods? what about HT?
     - update logic to more reasonably respond to user expression with nested commands
@@ -38,10 +38,12 @@ pre generative order update items:
     [v] imp lvl 1 cmd 'edit' & unit test
     [v] update buildExecutionTree() logic to handle building generally
     [v] use edit to form testing basis for correctness of execution tree production & ordering in mm-service
-    - make generate inference work with stuff like edit 
+    [v] make generate inference work with stuff like edit 
   
-  - review buildExecutionTree and resolve smaller issues, including what is above
-  
+  [v] review buildExecutionTree and resolve smaller issues, including what is above
+    - getting rid of surplus helper function calls thru pristine def of info as enums
+    - delay dec of vars until needed
+
 3.4.2 data-typing
   - review data-typing decisions to better support canvas functions
     - clean up src code, update and trim comments
