@@ -59,23 +59,34 @@ pre generative order update items:
   [v] update to restore coherence with the execution tree framework 
   [v] setup function frames
 
-3.4.4 mm canvas generative basis create
-  - reorder basis functions after response function frame
-  - implement recursive link generate
-  - review contents of other basis functions
+[v] 3.4.4 prep for mm canvas generative basis creation
+  [v] reorder basis functions after response function frame
+  [v] review contents of basis functions
 
-3.4.5 testing
+3.4.5 write recursive generate link function
+  [v] split alloc space into variants depending on use case
+  - incorporate block reference bundling into allocOrphan invocation chain
+  - radial block space search (RBSS) algorithm review
+  - incorporate block reference bundling and node creation into RBSS
+  - based on RBSS, write recursive block/link pair space allocation alogrithm
+    * this will later serve as generate link function
+
+3.4.6 reference bundle block info into Mm-isque objects
+
+3.4.7 review other aspects of mm canvas generative basis
+
+3.4.8 testing
   - feather out the canvas scope testing framework
 
-3.4.6 restoring program internal coherence
+3.4.9 restoring program internal coherence
   - for canvas related data types
     - review obj functions, update or trim as necessary
     - check how reference storing is handled across the framework
   - reflect data-typing changes to related components to restore program internal coherence
 
-3.4.7 review logic used in response functions
+3.4.10 review logic used in response functions
 
-3.4.8 normalizing display window and cell related dimension settings
+3.4.11 normalizing display window and cell related dimension settings
 
 
 ------------------------------------------------------------------------------------------------------

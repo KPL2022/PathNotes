@@ -30,7 +30,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     for (var i = 0; i < 2; i++) {
 
-      this.generateNode(String(i));
+      this.generate(String(i), this.compareByText);
     }
 
     var a = this.activeNodes[0];
@@ -111,25 +111,25 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     if (cName === OperatorName.generate) {
 
-      return this.generate(args, this.compareByText);
+      return this.generate(args[0] as string, this.compareByText);
     } else if (cName === OperatorName.edit) {
 
-      return this.edit(cmd, args);
+      return this.edit(args[0] as string, args[1] as string);
     } else if (cName === OperatorName.highlight) {
 
-      return this.highlight(cmd, args);
+      return this.highlight(args[0] as string);
     } else if (cName === OperatorName.remove) {
 
-      return this.remove(cmd, args);
+      return this.remove(args[0] as string);
     } else if (cName === OperatorName.link) {
 
-      return this.link(cmd, args);
+      return this.link(args[0] as MmNode, args[1] as MmNode);
     } else if (cName === OperatorName.unlink) {
 
-      return this.unlink(cmd, args);
+      return this.unlink(args[0] as MmNode, args[1] as MmNode);
     } else if (cName === OperatorName.merge) {
 
-      return this.merge(cmd, args);
+      return this.merge(args[0] as MmNode, args[1] as MmNode);
     } else {
 
       return undefined;
@@ -146,7 +146,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     return nd.getId() === txtInput;
   }
 
-  generate(args: any[], compare: (nd: MmNode, txt: string) => boolean) {
+  generate(txtIdentifier: string, compare: (nd: MmNode, txt: string) => boolean) {
 
     /**
      * pseudo code:
@@ -159,21 +159,25 @@ export class MmCanvasComponent implements OnInit, OnChanges {
      *  - get node txt from params and check no entry alr exist
      *  - if no entry, gen node, else return found entry
      */
-    var nd: MmNode | undefined = this.activeNodes.find((nd: MmNode) => compare(nd, args[0]));
+    var nd: MmNode | undefined = this.activeNodes.find((nd: MmNode) => compare(nd, txtIdentifier));
 
     if (nd === undefined) {
 
       // gen node
-      var nodeCore: number[] = this.allocSpace('node', []);
-      nd = new MmNode(null, nodeCore[0], nodeCore[1], args[0], String(this.ids++));
+      var nd: MmNode | undefined = this.allocOrphan(txtIdentifier, String(this.ids++));
       
+      if (nd === undefined) {
+
+        throw new Error('unable to allocate space for node');
+      }
+
       this.activeNodes.push(nd);
     }
     
     return nd;
   }
 
-  edit(cmd: SystemCommand, args: any[]) {
+  edit(id: string, newTxt: string) {
 
     /**
      * pseudo code:
@@ -188,22 +192,22 @@ export class MmCanvasComponent implements OnInit, OnChanges {
      *  - edit node text
      *  - return node itself
      */
-    var nd: MmNode = this.generate([args[0]], this.compareById);
+    var nd: MmNode = this.generate(id, this.compareById);
 
-    nd.setTxt(args[1]);
+    nd.setTxt(newTxt);
 
     return nd;
   }
 
-  highlight(cmd: SystemCommand, args: any[]) {
+  highlight(txtIdentifier: string) {
 
   }
 
-  remove(cmd: SystemCommand, args: any[]) {
+  remove(txtIdentifier: string) {
 
   }
 
-  link(cmd: SystemCommand, args: any[]) {
+  link(child: MmNode, parent: MmNode) {
 
     /**
      * pseudo code:
@@ -223,8 +227,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
      *  - else generate link recursively
      *  - return parent node
      */
-    var child: MmNode = args[0];
-    var parent: MmNode = args[1];
 
     // assert every node can only have 1 parent
     var foundLink: MmLink | undefined = this.activeLinks.find((lk: MmLink) => lk.child.getId() === child.getId());
@@ -232,18 +234,56 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     if (foundLink === undefined) {
 
       // gen link recursively
-      
+      this.generateLink(child, parent);
     }
 
     return parent;
   }
 
-  unlink(cmd: SystemCommand, args: any[]) {
+  unlink(child: MmNode, parent: MmNode) {
 
   }
 
-  merge(cmd: SystemCommand, args: any[]) {
+  merge(clusterA: MmNode, clusterB: MmNode) {
 
+  }
+
+  generateLink(child: MmNode, parent: MmNode) {
+
+    /**
+     * pseudo code:
+     * 
+     * relocate():
+     * 1. try to relocate child to nearest position around parent
+     * 
+     *    i. free():
+     *      - free child old position
+     * 
+     *    ii. alloc()?
+     *      - alloc space to child new position
+     * 
+     * return to generateLink() -> allocLink()
+     * 2. get link params and use to alloc link space
+     * 
+     * return to generateLink()
+     * 3. reg link in active links collection
+     */
+
+    if (!this.allocChild(child, parent)) {
+
+      throw new Error('unable to allocate space for a child type node');
+    }
+
+    var portLocationPack: number[][] = this.getPortLocations(child, parent);
+    var st: number[] = portLocationPack[0];
+    var ed: number[] = portLocationPack[1];
+
+    var newLink = new MmLink(child, parent, st, ed);
+    newLink.setBlks(this.tmpLinkBlk);
+
+    this.activeLinks.push(newLink);
+    child.setParentLink(newLink);
+    parent.getChildrenLinks().push(newLink);
   }
 
   tmpRecLinkGen(rt: MmNode) {
@@ -262,7 +302,10 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         var link: MmLink = children[i];
         
         // relocate child to around new parent location
-        this.relocate(rt, link.child);
+        if (!this.allocChild(link.child, rt)) {
+
+          throw new Error('unable to allocate space for a child type node');
+        }
 
         // update link params: st, stAn, edAn, ed
         var portLocationPack: number[][] = this.getPortLocations(link.child, rt);
@@ -325,35 +368,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     } else {
 
       return Math.floor((yDist - entityHeight) / this.rowSize);
-    }
-  }
-
-  relocate(parent: MmNode, child: MmNode) {
-
-    /**
-     * pseudo code:
-     * 
-     * store old cx, cy info
-     * call allocSpace() with radial search option around parent node
-     * compare new cx, cy with old, if replace, free old, else free new
-     * 
-     * but, assertion provided by allocSpace, new will be <= old, === old worst case
-     * 
-     * update child with chosen cx, cy info and termin
-     */
-
-    var oldCx = child.getCx();
-    var oldCy = child.getCy();
-
-    var newCs: number[] = this.allocSpace('childof', [child, parent]);
-    
-    // TODO: imp special return for no result change
-    if (newCs[0] !== oldCx || newCs[1] !== oldCy) {
-
-      this.free(child);
-
-      child.setCx(newCs[0]);
-      child.setCy(newCs[1]);
     }
   }
 
@@ -437,51 +451,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     console.log(ret);
 
     return ret;
-  }
-
-  generateLink(child: MmNode, parent: MmNode) {
-
-    /**
-     * pseudo code:
-     * 
-     * relocate():
-     * 1. try to relocate child to nearest position around parent
-     * 
-     *    i. free():
-     *      - free child old position
-     * 
-     *    ii. alloc()?
-     *      - alloc space to child new position
-     * 
-     * return to generateLink() -> allocLink()
-     * 2. get link params and use to alloc link space
-     * 
-     * return to generateLink()
-     * 3. reg link in active links collection
-     */
-
-    this.relocate(parent, child);
-
-    var portLocationPack: number[][] = this.getPortLocations(child, parent);
-    var st: number[] = portLocationPack[0];
-    var ed: number[] = portLocationPack[1];
-
-    var newLink = new MmLink(child, parent, st, ed);
-    newLink.setBlks(this.tmpLinkBlk);
-
-    this.activeLinks.push(newLink);
-    child.setParentLink(newLink);
-    parent.getChildrenLinks().push(newLink);
-  }
-
-  generateNode(userInput: string) {
-
-    var nodeCore: number[] = this.allocSpace('node', []);
-    var res = new MmNode(null, nodeCore[0], nodeCore[1], userInput, String(this.ids++));
-
-    this.activeNodes.push(res);
-    
-    return res;
   }
 
   /**
@@ -908,190 +877,353 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     return false;
   }
 
-  allocSpace(purpose: string, args: any[]) {
-
-    var colSize = this.colSize;
-    var rowSize = this.rowSize;
-
-    var nodeWidth = 3 * colSize;
-    var nodeHeight = 2 * rowSize;
-
-    // noooooo...gotta change this whole logic
-    /**
-     * pc:
-     * 1. randomly choose 2 adjacent rows (later projection heuristic improvement)
-     * 2. check rows for node space
-     * 3. mark chosen nodes as occupied
-     * 4. compute and return nodeCore to client
-     * 
-     * pc2:
-     * 1. determine use case (basic node alloc, node alloc for linking, etc)
-     * 2. determine scope (around given coord, or map wide blind)
-     * 3. based on scope -> compose order of rows or cols or n/a if for linking
-     * 4. for each item e order
-     *  i. generate all possible spots
-     *  ii. pass spot col to spot checker
-     *    - if spot checker returns core -> process and return to client
-     *    - if return is boolean fail -> proceed to next item e order or throw no space err
-     * 
-     * def: spot checker
-     * def: order generator
-     */
-
-    // assert purpose === 'node' || 'childof'
+  allocOrphan(txt: string, id: string): MmNode | undefined {
 
     // assert nodes as 2x3 entities in space
     var dims = [2, 3];
     
-    if (purpose === 'node') {
+    var itrOrder: number[] = [];
+    var fillRes: string = 'row';
 
-      var itrOrder: number[] = [];
-      var fillRes: string = 'row';
+    fillRes = this.fillPartitionItrOrder(itrOrder, dims);
 
-      fillRes = this.fillPartitionItrOrder(itrOrder, dims);
+    // hehe, randomize order
+    itrOrder = this.shuffleOrder(itrOrder);
 
-      // hehe, randomize order
-      itrOrder = this.shuffleOrder(itrOrder);
+    if (fillRes === 'row') {
 
-      if (fillRes === 'row') {
-
-        // row wise itr
-        for (var i = 0; i < itrOrder.length; i++) {
-  
-          var cands: MmBlock[] = [];
-
-          for (var j = 0; j < this.nodeOrigin[itrOrder[i]].length - dims[1] - 1; j++) {
-  
-            if (this.nodeOrigin[itrOrder[i]][j].isFree) {
-  
-              cands.push(this.nodeOrigin[itrOrder[i]][j]);
-            }
-          }
-  
-          cands = this.shuffleOrder(cands);
-  
-          var ret: number[] | boolean = this.alloc(cands, 'host node', 'tf', []);
-  
-          if (typeof ret !== "boolean") {
-  
-            // handle returns
-            return ret;
-          }
-        }  
-      }
-    }
-
-    if (purpose === 'childof') {
-
-      var child: MmNode = args[0];
-      var parent: MmNode = args[1];
-      var childCenter: number[] = [child.getCx(), child.getCy()];
-
-      // compute radial search limit from old child position
-      var lim = this.distBetween(parent, childCenter);
-
-      // window.alert(lim);
-
-      var pLeftCol = Math.floor(parent.getCx() / colSize) - 1;
-      var pRightCol = pLeftCol + 2;
-      var pTopRow = Math.floor(parent.getCy() / rowSize) - 1;
-      var pBotRow = pTopRow + 1;
-
-      // for each radial layer, fill candidates list, try to alloc, case on res to itr or ret
-      for (var i = 1; i < lim; i++) {
+      // row wise itr
+      for (var i = 0; i < itrOrder.length; i++) {
 
         var cands: MmBlock[] = [];
 
-        // fill cands list
-        
-        // get bound dims
-        var topBoundRow = pTopRow - i - dims[0];
-        var botBoundRow = pBotRow + i + 1;
-        var leftBoundCol = pLeftCol - i - dims[1];
-        var rightBoundCol = pRightCol + i + 1;
+        for (var j = 0; j < this.nodeOrigin[itrOrder[i]].length - dims[1] - 1; j++) {
 
-        // for each bound dim in range -> fill cands respectively
-        if (topBoundRow >= 0) {
+          if (this.nodeOrigin[itrOrder[i]][j].isFree) {
 
-          var start = Math.max(0, leftBoundCol);
-          var end = Math.min(this.nodeOrigin[0].length - dims[1], rightBoundCol);
-
-          for (var i = start; i <= end; i++) {
-
-            var blk = this.nodeOrigin[topBoundRow][i];
-
-            if (blk.isFree) {
-
-              cands.push(blk);
-            }
+            cands.push(this.nodeOrigin[itrOrder[i]][j]);
           }
         }
 
-        if (botBoundRow <= this.nodeOrigin.length - dims[0]) {
+        cands = this.shuffleOrder(cands);
 
-          var start = Math.max(0, leftBoundCol);
-          var end = Math.min(this.nodeOrigin[0].length - dims[1], rightBoundCol);
-
-          for (var i = start; i <= end; i++) {
-
-            var blk = this.nodeOrigin[botBoundRow][i];
-
-            if (blk.isFree) {
-
-              cands.push(blk);
-            }
-          }
-        }
-
-        if (leftBoundCol >= 0) {
-
-          var start = Math.max(0, topBoundRow) + 1;
-          var end = Math.min(this.nodeOrigin.length - dims[0], botBoundRow) - 1;
-
-          for (var i = start; i <= end; i++) {
-
-            var blk = this.nodeOrigin[i][leftBoundCol];
-
-            if (blk.isFree) {
-
-              cands.push(blk);
-            }
-          }
-        }
-
-        if (rightBoundCol <= this.nodeOrigin[0].length - dims[1]) {
-
-          var start = Math.max(0, topBoundRow) + 1;
-          var end = Math.min(this.nodeOrigin.length - dims[0], botBoundRow) - 1;
-
-          for (var i = start; i <= end; i++) {
-
-            var blk = this.nodeOrigin[i][rightBoundCol];
-
-            if (blk.isFree) {
-
-              cands.push(blk);
-            }
-          }
-        }
-
-        // // shuffle order
-        // cands = this.shuffleOrder(cands);
-
-        var ret: number[] | boolean = this.alloc(cands, 'child node', 'tf', [parent]);
+        var ret: number[] | boolean = this.alloc(cands, 'host node', 'tf', []);
 
         if (typeof ret !== "boolean") {
 
-          return ret;
+          // create and return node to client
+          var nd: MmNode = new MmNode(null, ret[0], ret[1], txt, id);
+        }
+      }  
+    }
+
+    return undefined;
+  }
+
+  // get rid of that global arr
+  // handle no change case
+  allocChild(child: MmNode, parent: MmNode): boolean {
+
+    // assert nodes as 2x3 entities in space
+    var dims = [2, 3];
+
+    var colSize = this.colSize;
+    var rowSize = this.rowSize;
+
+    var childCenter: number[] = [child.getCx(), child.getCy()];
+
+    // compute radial search limit from old child position
+    var lim = this.distBetween(parent, childCenter);
+
+    // window.alert(lim);
+
+    var pLeftCol = Math.floor(parent.getCx() / colSize) - 1;
+    var pRightCol = pLeftCol + 2;
+    var pTopRow = Math.floor(parent.getCy() / rowSize) - 1;
+    var pBotRow = pTopRow + 1;
+
+    // for each radial layer, fill candidates list, try to alloc, case on res to itr or ret
+    for (var i = 1; i < lim; i++) {
+
+      var cands: MmBlock[] = [];
+
+      // fill cands list
+      
+      // get bound dims
+      var topBoundRow = pTopRow - i - dims[0];
+      var botBoundRow = pBotRow + i + 1;
+      var leftBoundCol = pLeftCol - i - dims[1];
+      var rightBoundCol = pRightCol + i + 1;
+
+      // for each bound dim in range -> fill cands respectively
+      if (topBoundRow >= 0) {
+
+        var start = Math.max(0, leftBoundCol);
+        var end = Math.min(this.nodeOrigin[0].length - dims[1], rightBoundCol);
+
+        for (var i = start; i <= end; i++) {
+
+          var blk = this.nodeOrigin[topBoundRow][i];
+
+          if (blk.isFree) {
+
+            cands.push(blk);
+          }
         }
       }
 
-      return childCenter;
+      if (botBoundRow <= this.nodeOrigin.length - dims[0]) {
+
+        var start = Math.max(0, leftBoundCol);
+        var end = Math.min(this.nodeOrigin[0].length - dims[1], rightBoundCol);
+
+        for (var i = start; i <= end; i++) {
+
+          var blk = this.nodeOrigin[botBoundRow][i];
+
+          if (blk.isFree) {
+
+            cands.push(blk);
+          }
+        }
+      }
+
+      if (leftBoundCol >= 0) {
+
+        var start = Math.max(0, topBoundRow) + 1;
+        var end = Math.min(this.nodeOrigin.length - dims[0], botBoundRow) - 1;
+
+        for (var i = start; i <= end; i++) {
+
+          var blk = this.nodeOrigin[i][leftBoundCol];
+
+          if (blk.isFree) {
+
+            cands.push(blk);
+          }
+        }
+      }
+
+      if (rightBoundCol <= this.nodeOrigin[0].length - dims[1]) {
+
+        var start = Math.max(0, topBoundRow) + 1;
+        var end = Math.min(this.nodeOrigin.length - dims[0], botBoundRow) - 1;
+
+        for (var i = start; i <= end; i++) {
+
+          var blk = this.nodeOrigin[i][rightBoundCol];
+
+          if (blk.isFree) {
+
+            cands.push(blk);
+          }
+        }
+      }
+
+      // // shuffle order
+      // cands = this.shuffleOrder(cands);
+
+      var ret: number[] | boolean = this.alloc(cands, 'child node', 'tf', [parent]);
+
+      if (typeof ret !== "boolean") {
+
+        // TODO: imp
+
+        // update child node info and return success flag
+        // free child old blocks
+        // set child to new blocks
+
+        return true;
+      }
     }
 
-    return [0, 0];
+    return false;
   }
 }
+
+//   allocSpace(purpose: string, args: any[]) {
+
+//     var colSize = this.colSize;
+//     var rowSize = this.rowSize;
+
+//     var nodeWidth = 3 * colSize;
+//     var nodeHeight = 2 * rowSize;
+
+//     // noooooo...gotta change this whole logic
+//     /**
+//      * pc:
+//      * 1. randomly choose 2 adjacent rows (later projection heuristic improvement)
+//      * 2. check rows for node space
+//      * 3. mark chosen nodes as occupied
+//      * 4. compute and return nodeCore to client
+//      * 
+//      * pc2:
+//      * 1. determine use case (basic node alloc, node alloc for linking, etc)
+//      * 2. determine scope (around given coord, or map wide blind)
+//      * 3. based on scope -> compose order of rows or cols or n/a if for linking
+//      * 4. for each item e order
+//      *  i. generate all possible spots
+//      *  ii. pass spot col to spot checker
+//      *    - if spot checker returns core -> process and return to client
+//      *    - if return is boolean fail -> proceed to next item e order or throw no space err
+//      * 
+//      * def: spot checker
+//      * def: order generator
+//      */
+
+//     // assert purpose === 'node' || 'childof'
+
+//     // assert nodes as 2x3 entities in space
+//     var dims = [2, 3];
+    
+//     if (purpose === 'node') {
+
+//       var itrOrder: number[] = [];
+//       var fillRes: string = 'row';
+
+//       fillRes = this.fillPartitionItrOrder(itrOrder, dims);
+
+//       // hehe, randomize order
+//       itrOrder = this.shuffleOrder(itrOrder);
+
+//       if (fillRes === 'row') {
+
+//         // row wise itr
+//         for (var i = 0; i < itrOrder.length; i++) {
+  
+//           var cands: MmBlock[] = [];
+
+//           for (var j = 0; j < this.nodeOrigin[itrOrder[i]].length - dims[1] - 1; j++) {
+  
+//             if (this.nodeOrigin[itrOrder[i]][j].isFree) {
+  
+//               cands.push(this.nodeOrigin[itrOrder[i]][j]);
+//             }
+//           }
+  
+//           cands = this.shuffleOrder(cands);
+  
+//           var ret: number[] | boolean = this.alloc(cands, 'host node', 'tf', []);
+  
+//           if (typeof ret !== "boolean") {
+  
+//             // handle returns
+//             return ret;
+//           }
+//         }  
+//       }
+//     }
+
+//     if (purpose === 'childof') {
+
+//       var child: MmNode = args[0];
+//       var parent: MmNode = args[1];
+//       var childCenter: number[] = [child.getCx(), child.getCy()];
+
+//       // compute radial search limit from old child position
+//       var lim = this.distBetween(parent, childCenter);
+
+//       // window.alert(lim);
+
+//       var pLeftCol = Math.floor(parent.getCx() / colSize) - 1;
+//       var pRightCol = pLeftCol + 2;
+//       var pTopRow = Math.floor(parent.getCy() / rowSize) - 1;
+//       var pBotRow = pTopRow + 1;
+
+//       // for each radial layer, fill candidates list, try to alloc, case on res to itr or ret
+//       for (var i = 1; i < lim; i++) {
+
+//         var cands: MmBlock[] = [];
+
+//         // fill cands list
+        
+//         // get bound dims
+//         var topBoundRow = pTopRow - i - dims[0];
+//         var botBoundRow = pBotRow + i + 1;
+//         var leftBoundCol = pLeftCol - i - dims[1];
+//         var rightBoundCol = pRightCol + i + 1;
+
+//         // for each bound dim in range -> fill cands respectively
+//         if (topBoundRow >= 0) {
+
+//           var start = Math.max(0, leftBoundCol);
+//           var end = Math.min(this.nodeOrigin[0].length - dims[1], rightBoundCol);
+
+//           for (var i = start; i <= end; i++) {
+
+//             var blk = this.nodeOrigin[topBoundRow][i];
+
+//             if (blk.isFree) {
+
+//               cands.push(blk);
+//             }
+//           }
+//         }
+
+//         if (botBoundRow <= this.nodeOrigin.length - dims[0]) {
+
+//           var start = Math.max(0, leftBoundCol);
+//           var end = Math.min(this.nodeOrigin[0].length - dims[1], rightBoundCol);
+
+//           for (var i = start; i <= end; i++) {
+
+//             var blk = this.nodeOrigin[botBoundRow][i];
+
+//             if (blk.isFree) {
+
+//               cands.push(blk);
+//             }
+//           }
+//         }
+
+//         if (leftBoundCol >= 0) {
+
+//           var start = Math.max(0, topBoundRow) + 1;
+//           var end = Math.min(this.nodeOrigin.length - dims[0], botBoundRow) - 1;
+
+//           for (var i = start; i <= end; i++) {
+
+//             var blk = this.nodeOrigin[i][leftBoundCol];
+
+//             if (blk.isFree) {
+
+//               cands.push(blk);
+//             }
+//           }
+//         }
+
+//         if (rightBoundCol <= this.nodeOrigin[0].length - dims[1]) {
+
+//           var start = Math.max(0, topBoundRow) + 1;
+//           var end = Math.min(this.nodeOrigin.length - dims[0], botBoundRow) - 1;
+
+//           for (var i = start; i <= end; i++) {
+
+//             var blk = this.nodeOrigin[i][rightBoundCol];
+
+//             if (blk.isFree) {
+
+//               cands.push(blk);
+//             }
+//           }
+//         }
+
+//         // // shuffle order
+//         // cands = this.shuffleOrder(cands);
+
+//         var ret: number[] | boolean = this.alloc(cands, 'child node', 'tf', [parent]);
+
+//         if (typeof ret !== "boolean") {
+
+//           return ret;
+//         }
+//       }
+
+//       return childCenter;
+//     }
+
+//     return [0, 0];
+//   }
 // ignore purpose param for now, assume alloc for node
     // var pickRow!: MmBlock[];
     // var foundRow = false;
