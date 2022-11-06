@@ -10,7 +10,7 @@ import { MindmapService } from '../mindmap.service';
 })
 export class MindmapComponent implements OnInit {
 
-  canvasQuery!: SystemCommand | string;
+  canvasQuery!: SystemCommand;
 
   constructor(private mmCore: MindmapService) { }
 

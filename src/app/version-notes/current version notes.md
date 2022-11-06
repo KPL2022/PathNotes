@@ -26,6 +26,8 @@ pre generative order update items:
   - lots of 'diff-by-1' kind of directional differences, recheck later checklinkspace stuff
   - review src code fx ordering for 3.4.2 & +
   - document assertions like connectedness of commands e user input as premise of fx like buildextree etc etc
+  - mm controls -> using chaining events to address the repeated user input stuff
+  - mm controls -> the on user input detection logic should be ironed out more
 
 [v] 3.4.1 mm-service 
   [v] clean up src code -> update and trim comments
@@ -51,21 +53,29 @@ pre generative order update items:
     [v] compartmentalize data-typing file into directory format
       [v] split into smaller files, each file for typing of a specific purpose
 
-3.4.3 mm-canvas interpretation response functions
-  - clean up src code, update or trim comments as necessary
+[v] 3.4.3 mm-canvas interpretation response functions
+  [v] clean up src code, update or trim comments as necessary
     [v] trim dated comments
-  - update to restore coherence with the execution tree framework 
+  [v] update to restore coherence with the execution tree framework 
+  [v] setup function frames
+
+3.4.4 mm canvas generative basis create
+  - reorder basis functions after response function frame
+  - implement recursive link generate
+  - review contents of other basis functions
+
+3.4.5 testing
   - feather out the canvas scope testing framework
 
-3.4.4 restoring program internal coherence
+3.4.6 restoring program internal coherence
   - for canvas related data types
     - review obj functions, update or trim as necessary
     - check how reference storing is handled across the framework
   - reflect data-typing changes to related components to restore program internal coherence
 
-3.4.5 review logic used in response functions
+3.4.7 review logic used in response functions
 
-3.4.6 normalizing display window and cell related dimension settings
+3.4.8 normalizing display window and cell related dimension settings
 
 
 ------------------------------------------------------------------------------------------------------

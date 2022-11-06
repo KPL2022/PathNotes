@@ -282,4 +282,6 @@ https://computergraphics.stackexchange.com/questions/5302/how-can-i-verify-if-a-
 
 114. https://stackoverflow.com/questions/37214014/angular-2-file-not-found-on-local-json-file
 
-115. 
+115. https://www.becomebetterprogrammer.com/typescript-pass-function-as-a-parameter/#Define_the_expected_value_returned_from_the_Function_type
+
+116. 

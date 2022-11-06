@@ -1,5 +1,4 @@
-import { TmplAstBoundAttribute, Xmb } from '@angular/compiler';
-import { Component, OnInit, Input, OnChanges, SimpleChanges, ApplicationRef } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 import { MmBlock, MmLink, MmNode } from '../data/DefMindmapStructs';
 import { OperatorName, SystemCommand } from '../data/DefSysCmd'
@@ -11,7 +10,7 @@ import { OperatorName, SystemCommand } from '../data/DefSysCmd'
 })
 export class MmCanvasComponent implements OnInit, OnChanges {
 
-  @Input() drawRequest!: SystemCommand | string;
+  @Input() drawRequest!: SystemCommand;
 
   activeNodes: MmNode[] = [];
   activeLinks: MmLink[] = [];
@@ -27,7 +26,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   constructor() { 
 
-    // this.activeNodes.push(new MmNode(100, 100, "xD", String(this.ids++)));
     this.initOrigin();
 
     for (var i = 0; i < 2; i++) {
@@ -42,11 +40,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   }
 
   initOrigin() {
-
-    var a = 75;
-    var b = 37;
-    var colMargin = 10;
-    var rowMargin = 6;
 
     var frameWidth = this.frameWidth;
     var frameHeight = this.frameHeight;
@@ -76,84 +69,181 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   interpretCmd(sysCmd: SystemCommand) {
 
-    // TODO: imp
-
     // testing
     console.log(sysCmd);
     this.traceExecutionTree(sysCmd);
   }
 
-  execute(cmd: SystemCommand, args: any[]) {
+  traceExecutionTree(rt: SystemCommand) {
 
-    if (cmd.getCmdLvl() === 0) {
+    if (rt.getCmdLvl() === 0) {
 
-      // assert name === generate
-      var userInput: string = args[0] as string;
-      
-      var existNode = this.activeNodes.find((val: MmNode) => val.getId() === userInput);
-
-      if (existNode !== undefined) {
-
-        return existNode;
-      } else {
-
-        return this.generateNode(userInput);
-      }
-    } else if (cmd.getCmdLvl() === 1) {
-
-      // switch: edit, remove, highlight
-      if (cmd.getOperatorName() === OperatorName.edit) {
-
-        var node: MmNode | undefined = this.activeNodes.find((val: MmNode) => val.getId() === (args[0] as MmNode).getId());
-
-        if (node !== undefined) {
-
-          node.setTxt((args[1] as MmNode).getTxt());
-        }
-
-        return args[0] as MmNode;
-      } else if (cmd.getOperatorName() === OperatorName.remove) {
-
-
-      } else {
-
-        // assert name === highlight
-      }
-    } else if (cmd.getCmdLvl() === 2) {
-
-      // switch: link, unlink
-      if (cmd.getOperatorName() === OperatorName.link) {
-
-        var child: MmNode = args[0] as MmNode;
-        var parent: MmNode = args[1] as MmNode;
-
-        // check if link alr exists
-        var findLink = parent.getChildrenLinks().find((link: MmLink) => link.child.getId() === child.getId());
-
-        if (findLink !== undefined) {
-
-          // do nothing xD
-        } else {
-
-          this.generateLink(child, parent);
-
-          // recursively generate all related links
-          this.tmpRecLinkGen(child);
-        }
-
-        return parent;
-      } else {
-
-        // assert name === unlink
-      }
+      return this.execute(rt, rt.getOperands());
     } else {
 
-      // merge is only lvl3 so far
+      var children: SystemCommand[] = rt.getOperands() as SystemCommand[];
+      var operands: any[] = [];
 
+      for (var i = 0; i < children.length; i++) {
+
+        operands.push(this.traceExecutionTree(children[i]));
+      }
+
+      return this.execute(rt, operands);
+    }
+  }
+
+  execute(cmd: SystemCommand, args: any[]) {
+
+    /**
+     * pseudo code
+     * 
+     * 0. inv
+     *  - execute return value depends on context of the command
+     *    - undefined as err code
+     * 
+     * 1. imp plan
+     *  - switch on cmd.name
+     */
+    
+    // switch on cmd.name
+    var cName: OperatorName = cmd.getOperatorName();
+
+    if (cName === OperatorName.generate) {
+
+      return this.generate(args, this.compareByText);
+    } else if (cName === OperatorName.edit) {
+
+      return this.edit(cmd, args);
+    } else if (cName === OperatorName.highlight) {
+
+      return this.highlight(cmd, args);
+    } else if (cName === OperatorName.remove) {
+
+      return this.remove(cmd, args);
+    } else if (cName === OperatorName.link) {
+
+      return this.link(cmd, args);
+    } else if (cName === OperatorName.unlink) {
+
+      return this.unlink(cmd, args);
+    } else if (cName === OperatorName.merge) {
+
+      return this.merge(cmd, args);
+    } else {
+
+      return undefined;
+    }
+  }
+
+  compareByText(nd: MmNode, txtInput: string) {
+
+    return nd.getTxt() === txtInput;
+  }
+
+  compareById(nd: MmNode, txtInput: string) {
+
+    return nd.getId() === txtInput;
+  }
+
+  generate(args: any[], compare: (nd: MmNode, txt: string) => boolean) {
+
+    /**
+     * pseudo code:
+     * 
+     * 0. mats & inv:
+     *  - the to be gen'ed node does not alr exist
+     *  - cmd + args contain sufficient info to gen node
+     * 
+     * 2. plan
+     *  - get node txt from params and check no entry alr exist
+     *  - if no entry, gen node, else return found entry
+     */
+    var nd: MmNode | undefined = this.activeNodes.find((nd: MmNode) => compare(nd, args[0]));
+
+    if (nd === undefined) {
+
+      // gen node
+      var nodeCore: number[] = this.allocSpace('node', []);
+      nd = new MmNode(null, nodeCore[0], nodeCore[1], args[0], String(this.ids++));
+      
+      this.activeNodes.push(nd);
+    }
+    
+    return nd;
+  }
+
+  edit(cmd: SystemCommand, args: any[]) {
+
+    /**
+     * pseudo code:
+     * 
+     * 0. mats & inv:
+     *  - node to be edited has id args[0] as string
+     *  - node with id exists or will be created 
+     * - args[1] as string is new txt for such node
+     * 
+     * 2. plan
+     *  - try to find node by id, if not found create such node
+     *  - edit node text
+     *  - return node itself
+     */
+    var nd: MmNode = this.generate([args[0]], this.compareById);
+
+    nd.setTxt(args[1]);
+
+    return nd;
+  }
+
+  highlight(cmd: SystemCommand, args: any[]) {
+
+  }
+
+  remove(cmd: SystemCommand, args: any[]) {
+
+  }
+
+  link(cmd: SystemCommand, args: any[]) {
+
+    /**
+     * pseudo code:
+     * 
+     * 0. mats & inv:
+     *  - args[0] is child node
+     *  - args[1] is parent node
+     *  - both child & parent confirmed to exist
+     *  - child does not alr have link to parent
+     *  - child will have link to parent by end of this method
+     *  - parent will have child in child list
+     *  - child and des will relocate to satisfy linking reqs
+     * 
+     * 2. plan
+     *  - check if link alr exists
+     *  - if so do nothing
+     *  - else generate link recursively
+     *  - return parent node
+     */
+    var child: MmNode = args[0];
+    var parent: MmNode = args[1];
+
+    // assert every node can only have 1 parent
+    var foundLink: MmLink | undefined = this.activeLinks.find((lk: MmLink) => lk.child.getId() === child.getId());
+
+    if (foundLink === undefined) {
+
+      // gen link recursively
+      
     }
 
-    // for all unimplemented
-    return undefined;
+    return parent;
+  }
+
+  unlink(cmd: SystemCommand, args: any[]) {
+
+  }
+
+  merge(cmd: SystemCommand, args: any[]) {
+
   }
 
   tmpRecLinkGen(rt: MmNode) {
@@ -186,27 +276,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         // rec to child
         this.tmpRecLinkGen(link.child);
       }
-    }
-  }
-
-  traceExecutionTree(rt: SystemCommand) {
-
-    if (rt.getCmdLvl() === 0) {
-
-      // <= atomic level commands: 0-generate, 1-edit, remove, highlight
-      return this.execute(rt, rt.getOperands());
-    } else {
-
-      // branch level commands: link, unlink, merge
-      var children: SystemCommand[] = rt.getOperands() as SystemCommand[];
-      var operands: any[] = [];
-
-      for (var i = 0; i < children.length; i++) {
-
-        operands.push(this.traceExecutionTree(children[i]));
-      }
-
-      return this.execute(rt, operands);
     }
   }
 
