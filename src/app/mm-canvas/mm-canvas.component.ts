@@ -496,7 +496,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     return res;
   }
 
-  containable(st: MmBlock, width: number, height: number, ori: string) {
+  containable(st: MmBlock, width: number, height: number, ori: string, nodeBlks: MmBlock[]) {
 
     // assert st.isFree is true
     if (ori !== 'tf') {
@@ -848,9 +848,10 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       if (ori === 'tf') {
 
         var linkBlks: MmBlock[] = [];
+        var nodeBlks: MmBlock[] = [];
 
         if (this.checkLinkSpace(type, args[0] as MmNode, scope[i], linkBlks)
-            && this.containable(scope[i], entityWidth, entityHeight, ori)) {
+            && this.containable(scope[i], entityWidth, entityHeight, ori, nodeBlks)) {
 
           if (type === "child node") {
 
