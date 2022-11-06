@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ListEntry } from './DataTypes';
+import { ListEntry } from './data/DefListEntry';
 import { PersistencyService } from './persistency.service';
 
 @Injectable({

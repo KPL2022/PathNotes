@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ListEntry, RecordEntry } from './DataTypes';
+import { ListEntry, RecordEntry } from './data/DefListEntry';
 
 // import { HttpClient } from '@angular/common/http';
 // import { Observable, throwError } from 'rxjs';

@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-import { CommandDef, OptionDef, SystemCommand, TrieNode, OperatorName, OperatorLevel, OperatorType } from './DataTypes';
+import { CommandDef, OptionDef, SystemCommand, TrieNode, OperatorName, OperatorLevel, OperatorType } from './data/DefSysCmd';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MindmapService {
 
-  private symbolSrc = "/assets/internal/MmSystemCommands.json";
+  private symbolSrc = "app/data/MmSystemCommands.json";
   private extraOptsMarker = "--";
 
   private symPrefRoot!: TrieNode;

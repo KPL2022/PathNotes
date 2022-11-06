@@ -1,3 +1,4 @@
+current version: 0.7 functional mindmap module
 ------------------------------------------------------------------------------------------------------
 pre generative order update items:
 
@@ -44,14 +45,11 @@ pre generative order update items:
     - getting rid of surplus helper function calls thru pristine def of info as enums
     - delay dec of vars until needed
 
-3.4.2 data-typing
-  - review data-typing decisions to better support canvas functions
-    - clean up src code, update and trim comments
-    - compartmentalize data-typing file into directory format
-      - split into smaller files, each file for typing of a specific purpose
-    - for canvas related data types
-      - review obj functions, update or trim as necessary
-      - check how reference storing is handled across the framework
+[v] 3.4.2 data-typing
+  [v] review data-typing decisions to better support canvas functions
+    [v] clean up src code, update and trim comments
+    [v] compartmentalize data-typing file into directory format
+      [v] split into smaller files, each file for typing of a specific purpose
 
 3.4.3 mm-canvas interpretation response functions
   - clean up src code, update or trim comments as necessary
@@ -59,12 +57,16 @@ pre generative order update items:
   - update to restore coherence with the execution tree framework 
   - feather out the canvas scope testing framework
 
-3.4.4 normalizing display window and cell related dimension settings
+3.4.4 restoring program internal coherence
+  - for canvas related data types
+    - review obj functions, update or trim as necessary
+    - check how reference storing is handled across the framework
+  - reflect data-typing changes to related components to restore program internal coherence
 
 3.4.5 review logic used in response functions
 
-3.4.6 restoring program internal coherence
-  - - reflect data-typing changes to related components to restore program internal coherence
+3.4.6 normalizing display window and cell related dimension settings
+
 
 ------------------------------------------------------------------------------------------------------
 post processing & misc items:

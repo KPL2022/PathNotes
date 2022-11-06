@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ListEntry } from '../DataTypes';
+import { ListEntry } from '../data/DefListEntry';
 
 import { ExploreService } from '../explore.service';
 

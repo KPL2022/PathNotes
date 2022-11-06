@@ -1,7 +1,8 @@
 import { TmplAstBoundAttribute, Xmb } from '@angular/compiler';
 import { Component, OnInit, Input, OnChanges, SimpleChanges, ApplicationRef } from '@angular/core';
 
-import { MmBlock, MmLink, MmNode, OperatorName, SystemCommand } from '../DataTypes';
+import { MmBlock, MmLink, MmNode } from '../data/DefMindmapStructs';
+import { OperatorName, SystemCommand } from '../data/DefSysCmd'
 
 @Component({
   selector: 'app-mm-canvas',

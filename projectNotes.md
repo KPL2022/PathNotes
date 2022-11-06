@@ -280,4 +280,6 @@ https://computergraphics.stackexchange.com/questions/5302/how-can-i-verify-if-a-
 
 113. https://stackoverflow.com/questions/12030686/html-input-file-selection-event-not-firing-upon-selecting-the-same-file
 
-114. 
+114. https://stackoverflow.com/questions/37214014/angular-2-file-not-found-on-local-json-file
+
+115. 

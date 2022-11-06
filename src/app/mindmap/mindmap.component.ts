@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { SystemCommand } from '../DataTypes';
+import { SystemCommand } from '../data/DefSysCmd';
 
 import { MindmapService } from '../mindmap.service';
 
