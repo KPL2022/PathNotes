@@ -4,14 +4,17 @@ export class MmBlock {
   private ed: number;
   private dispHeight: number;
   private rowId: number;
-  private owner: MmNode | null;
+  private blkId: number;
+  private owner: MmNode | MmLink | null;
 
-  constructor(st: number, ed: number, dispHeight: number, rowId: number) {
+  constructor(st: number, ed: number, dispHeight: number, rowId: number, blkId: number) {
 
     this.st = st;
     this.ed = ed;
     this.dispHeight = dispHeight;
     this.rowId = rowId;
+    this.blkId = blkId;
+
     this.owner = null;
   }
 
@@ -25,9 +28,14 @@ export class MmBlock {
     return this.rowId;
   }
 
-  hasOwner() {
+  getBlkId() {
 
-    return this.owner !== null;
+    return this.blkId;
+  }
+
+  isFree() {
+
+    return this.owner === null;
   }
 
   getOwner() {
@@ -35,9 +43,14 @@ export class MmBlock {
     return this.owner;
   }
 
-  setOwner(newOwner: MmNode) {
+  setOwner(newOwner: MmNode | MmLink) {
 
     this.owner = newOwner;
+  }
+
+  free() {
+
+    this.owner = null;
   }
 
   getStart() {
@@ -73,6 +86,8 @@ export class MmNode {
 
   private blks: MmBlock[];
 
+  private clusterSize: number;
+
   constructor(parentLink: MmLink | null, x: number, y: number, txt: string, id: string) {
 
     this.parentLink = parentLink;
@@ -84,6 +99,18 @@ export class MmNode {
 
     this.childrenLinks = [];
     this.blks = [];
+
+    this.clusterSize = 1;
+  }
+
+  getClusterSize() {
+
+    return this.clusterSize;
+  }
+
+  setClusterSize(newSize: number) {
+
+    this.clusterSize = newSize;
   }
 
   getBlks() {
@@ -101,7 +128,7 @@ export class MmNode {
     return this.parentLink;
   }
 
-  setParentLink(newLink: MmLink) {
+  setParentLink(newLink: MmLink | null) {
 
     this.parentLink = newLink;
   }
@@ -201,6 +228,11 @@ export class MmLink {
     this.blks = blk;
   }
 
+  getSt() {
+    
+    return this.st;
+  }
+
   getStStr() {
 
     return this.st[0] + "," + this.st[1];
@@ -210,6 +242,11 @@ export class MmLink {
 
     this.st[0] = a;
     this.st[1] = b;
+  }
+
+  getEd() {
+
+    return this.ed;
   }
 
   getEdStr() {

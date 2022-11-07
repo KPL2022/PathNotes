@@ -16,16 +16,16 @@
 
     <ng-container *ngFor="let link of activeLinks">
 
-      <line [attr.x1]="link.st[0]" [attr.y1]="link.st[1]" [attr.x2]="link.ed[0]" [attr.y2]="link.ed[1]" style="stroke:rgb(255,0,0);stroke-width:5" />
+      <line [attr.x1]="link.getSt()[0]" [attr.y1]="link.getSt()[1]" [attr.x2]="link.getEd()[0]" [attr.y2]="link.getEd()[1]" style="stroke:rgb(255,0,0);stroke-width:5" />
     </ng-container>
     
     <ng-container *ngFor="let blockChain of nodeOrigin">
 
       <ng-container *ngFor="let block of blockChain">
 
-        <ng-container *ngIf="block.isFree">
+        <ng-container *ngIf="block.isFree()">
 
-          <rect [attr.x]="block.getStart()" [attr.y]="block.blockId * block.dispHeight" [attr.width]="block.getEnd() - block.getStart()" [attr.height]="block.dispHeight" style="fill:rgba(185, 115, 3, 0.648);stroke-width:1;stroke:rgb(0,0,0)" />
+          <rect [attr.x]="block.getStart()" [attr.y]="block.getRowId() * block.getDispHeight()" [attr.width]="block.getEnd() - block.getStart()" [attr.height]="block.getDispHeight()" style="fill:rgba(185, 115, 3, 0.648);stroke-width:1;stroke:rgb(0,0,0)" />
         </ng-container>
       </ng-container>
     </ng-container>
