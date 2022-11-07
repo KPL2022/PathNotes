@@ -72,6 +72,8 @@ pre generative order update items:
     * this will later serve as generate link function
 
 3.4.6 stablize RBSS performance
+  - what to do with cycles? haven't thought about it much yet, but this is a generic graph, at least, the conception so far is that it is
+    - by single path assertion, can restrict mindmaps to be trees, but is it the reasonable decision?
 
 3.4.7 reference bundle block info into Mm-isque objects
 

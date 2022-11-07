@@ -32,9 +32,20 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     var testPoolSize = 15;
     var testLinkCnt = 10;
 
+    this.generateExample(testPoolSize, testLinkCnt);
+  }
+
+  generateExample(testPoolSize: number, testLinkCnt: number) {
+
+    // cycle prevention with HT
+    var exclusion: Map<MmNode, string[]> = new Map();
+
     for (var i = 0; i < testPoolSize; i++) {
 
-      this.generate(String(i));
+      var node: MmNode = this.generate(String(i));
+
+      // register associated HT
+      exclusion.set(node, []);
     }
 
     for (var j = 0; j < testLinkCnt; j++) {
@@ -42,7 +53,23 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       var idxA = Math.floor(Math.random() * this.activeNodes.length);
       var idxB = Math.floor(Math.random() * this.activeNodes.length);
 
-      this.generateLink(this.activeNodes[idxA], this.activeNodes[idxB]);
+      while (idxA === idxB) {
+
+        idxB = Math.floor(Math.random() * this.activeNodes.length);
+      }
+
+      // assert idxA !== idxB, make sure B.exclude does not contain A
+      var bExcludes: string[] = exclusion.get(this.activeNodes[idxB]) as string[];
+      var findA: string | undefined = bExcludes.find((str: string) => str === this.activeNodes[idxA].getId());
+      
+      if (findA === undefined) {
+
+        // generate link
+        this.generateLink(this.activeNodes[idxA], this.activeNodes[idxB]);
+
+        // add A to B exclude
+        bExcludes.push(this.activeNodes[idxA].getId());
+      }
     }
   }
 
@@ -382,14 +409,13 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
       if (!this.radialBlockSpaceSearch([newLink], parent)) {
 
-        throw new Error('unable to allocate space for a child type node');
+        console.log(child);
+        console.log(parent);
+        throw new Error("unable to alloc space for gen lk purpose");
       }
 
       // add to active links col
       this.activeLinks.push(newLink);
-
-      // give child cluster size to parent
-      parent.setClusterSize(parent.getClusterSize() + child.getClusterSize());
     }
   }
 
@@ -602,11 +628,20 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       child.setCx(cx);
       child.setCy(cy);
 
-      return this.linkable(child, parent, dims);
-    } else {
+      if (this.linkable(child, parent, dims)) {
 
-      return false;
+        parent.setClusterSize(parent.getClusterSize() + child.getClusterSize());
+      
+        console.log("generated link for ");
+        console.log(child);
+        console.log(parent);
+        console.log("^^^");
+
+        return true;
+      }
     }
+
+    return false;
   }
 
   containable(st: MmBlock, nd: MmNode, width: number, height: number): boolean {
