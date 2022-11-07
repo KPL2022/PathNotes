@@ -29,7 +29,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     this.initOrigin();
 
-    var testPoolSize = 15;
+    var testPoolSize = 20;
     var testLinkCnt = 10;
 
     this.generateExample(testPoolSize, testLinkCnt);
@@ -58,19 +58,52 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         idxB = Math.floor(Math.random() * this.activeNodes.length);
       }
 
-      // assert idxA !== idxB, make sure B.exclude does not contain A
+      // assert idxA !== idxB, make sure B.exclude does not contain A or any of A's descendants
       var bExcludes: string[] = exclusion.get(this.activeNodes[idxB]) as string[];
-      var findA: string | undefined = bExcludes.find((str: string) => str === this.activeNodes[idxA].getId());
-      
-      if (findA === undefined) {
+      var aIncludes: string[] = [];
+
+      if (this.checkExclusion(this.activeNodes[idxA], bExcludes, aIncludes)) {
 
         // generate link
         this.generateLink(this.activeNodes[idxA], this.activeNodes[idxB]);
 
-        // add A to B exclude
-        bExcludes.push(this.activeNodes[idxA].getId());
+        // add A and descendant info to B exclude
+        for (var i = 0; i < aIncludes.length; i++) {
+
+          var findE = bExcludes.find((str: string) => str === aIncludes[i]);
+
+          if (findE === undefined) {
+
+            bExcludes.push(aIncludes[i]);
+          }
+        }
       }
     }
+  }
+
+  checkExclusion(rt: MmNode, excludes: string[], idList: string[]): boolean {
+
+    idList.push(rt.getId());
+
+    var findSelf: string | undefined = excludes.find((str: string) => str === rt.getId());
+
+    var retVal: boolean = findSelf === undefined;
+
+    if (retVal && rt.getChildrenLinks().length !== 0) {
+
+      var children: MmLink[] = rt.getChildrenLinks();
+      var i = 0;
+
+      while (i < children.length && retVal) {
+
+        var child = children[i].getChild();
+
+        retVal = retVal && this.checkExclusion(child, excludes, idList);
+        i++;
+      }
+    }
+
+    return retVal;
   }
 
   initOrigin() {
@@ -409,8 +442,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
       if (!this.radialBlockSpaceSearch([newLink], parent)) {
 
-        console.log(child);
-        console.log(parent);
         throw new Error("unable to alloc space for gen lk purpose");
       }
 
@@ -631,12 +662,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       if (this.linkable(child, parent, dims)) {
 
         parent.setClusterSize(parent.getClusterSize() + child.getClusterSize());
-      
-        console.log("generated link for ");
-        console.log(child);
-        console.log(parent);
-        console.log("^^^");
-
+    
         return true;
       }
     }

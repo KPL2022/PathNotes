@@ -74,23 +74,27 @@ pre generative order update items:
 3.4.6 stablize RBSS performance
   - what to do with cycles? haven't thought about it much yet, but this is a generic graph, at least, the conception so far is that it is
     - by single path assertion, can restrict mindmaps to be trees, but is it the reasonable decision?
+  - generate example restrict to trees only (no cycles)
+  - fragile RBSS from fixed parent location
 
-3.4.7 reference bundle block info into Mm-isque objects
+3.4.7 better link tracing method
 
-3.4.8 review other aspects of mm canvas generative basis
+3.4.8 reference bundle block info into Mm-isque objects
 
-3.4.9 testing
+3.4.9 review other aspects of mm canvas generative basis
+
+3.4.10 testing
   - feather out the canvas scope testing framework
 
-3.4.10 restoring program internal coherence
+3.4.11 restoring program internal coherence
   - for canvas related data types
     - review obj functions, update or trim as necessary
     - check how reference storing is handled across the framework
   - reflect data-typing changes to related components to restore program internal coherence
 
-3.4.11 review logic used in response functions
+3.4.12 review logic used in response functions
 
-3.4.12 normalizing display window and cell related dimension settings
+3.4.13 normalizing display window and cell related dimension settings
 
 
 ------------------------------------------------------------------------------------------------------
