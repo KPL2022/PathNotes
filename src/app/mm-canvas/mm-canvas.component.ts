@@ -24,7 +24,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   rowSize = Math.floor(0.05 * this.frameHeight);
   estimateLayerSize = 3; // estimate 8 child nodes per layer for RBSS search depth recommendation
   perLayerSearchLim = 3;
-  minSearchDist = 2;
+  minSearchDist = 1;
 
   constructor() { 
 
@@ -502,13 +502,16 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
       var lim = this.computeLim(child, parent);
 
-      var k = this.minSearchDist;
+      var rangeList = this.shuffleOrder(this.range(this.minSearchDist, lim));
+      var k = 0;
       var relocationComplete = false;
 
-      while (k <= lim && !relocationComplete) {
+      while (k < rangeList.length && !relocationComplete) {
+
+        var m = rangeList[k];
 
         // in order of top, bot, left, right
-        var bounds: number[] = [pTopRow - k - dims[0], pBotRow + k + 1, pLeftCol - k - dims[1], pRightCol + k + 1];
+        var bounds: number[] = [pTopRow - m - dims[0], pBotRow + m + 1, pLeftCol - m - dims[1], pRightCol + m + 1];
 
         var cands: MmBlock[] = this.getRadialLayer(bounds, dims);
 
@@ -836,94 +839,9 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     link.setSt(st[0], st[1]);
     link.setEd(ed[0], ed[1]);
 
-    console.log(link);
+    // console.log(link);
 
     return true;
-
-    // // handle dX = 0 case
-    // if (child.getCx() === parent.getCx()) {
-
-    //   // TODO: imp
-    //   return false;
-    // } else {
-
-    //   // compute slope m
-    //   var m = (child.getCy() - parent.getCy()) / (child.getCx() - parent.getCx());
-
-    //   var xDir!: number;
-    //   var yDir!: number;
-
-    //   if (child.getCx() > parent.getCx()) {
-
-    //     xDir = -1;
-    //   } else {
-
-    //     xDir = 1;
-    //   }
-
-    //   if (child.getCy() > parent.getCy()) {
-
-    //     yDir = -1;
-    //   } else {
-
-    //     yDir = 1;
-    //   }
-
-    //   // find intersection between ports and host node frame lines
-    //   // ports e line: y - st[1] = m (x - st[0])
-    //   // host node frame lines: y = dummy.getCy() + yDir * b and y = parent.getCy() + -1 * yDir * b
-    //   var stY = child.getCy() + yDir * this.rowSize;
-    //   var stX = (stY + m * st[0] - st[1]) / m;
-
-    //   var edY = parent.getCy() + -1 * yDir * this.rowSize;
-    //   var edX = (edY + m * st[0] - st[1]) / m;
-
-    //   // this.testPoints.push([stX, stY]);
-    //   // this.testPoints.push([edX, edY]);
-
-    //   var blks: MmBlock[] = [];
-
-    //   // handle end points first
-    //   if (!this.projectLink(stX, stY, st, xDir, m, this.toAnchorLine(stX, xDir), yDir, blks) || 
-    //         !this.projectLink(edX, edY, st, -1 * xDir, m, this.toAnchorLine(edX, -1 * xDir), -1 * yDir, blks)) {
-
-    //     return false;
-    //   }
-
-    //   // check anchor lines in between
-    //   if (xDir > 0) {
-
-    //     for (var i = this.toAnchorLine(stX, xDir); i < this.toAnchorLine(edX, -1 * xDir); i = i + this.colSize) {
-
-    //       if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i + this.colSize, yDir, blks)) {
-
-    //         return false;
-    //       }
-    //     }
-    //   } else {
-
-    //     for (var i = this.toAnchorLine(stX, xDir); i > this.toAnchorLine(edX, -1 * xDir); i = i - this.colSize) {
-
-    //       if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i - this.colSize, yDir, blks)) {
-
-    //         return false;
-    //       }
-    //     }
-    //   }
-
-    //   // complete link setup
-    //   var link: MmLink = child.getParentLink() as MmLink;
-      
-    //   this.freeLink(link);
-
-    //   link.setBlks(blks);
-    //   blks.forEach((blk: MmBlock) => blk.setOwner(link));
-
-    //   link.setSt(st[0], st[1]);
-    //   link.setEd(ed[0], ed[1]);
-
-    //   return true;
-    // }
   }
 
   getPortLocations(from: MmNode, to: MmNode): number[][] {
@@ -1091,6 +1009,18 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     // assert original.length === 1
     res.push(original[0]);
+
+    return res;
+  }
+
+  range(st: number, ed: number): number[] {
+
+    var res: number[] = [];
+
+    for (var i = st; i <= ed; i++) {
+
+      res.push(i);
+    }
 
     return res;
   }

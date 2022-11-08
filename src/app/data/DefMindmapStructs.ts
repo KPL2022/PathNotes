@@ -318,14 +318,6 @@ export class LinkPath {
       this.dxToNxt = 999;
     }
 
-    // console.log(this.contains(child, this.curPt));
-    // this.next();
-    // console.log(this.contains(child, this.curPt));
-    // this.next();
-    // console.log(this.contains(child, this.curPt));
-    // this.next();
-    // console.log(this.contains(child, this.curPt));
-
     // provide offset to st to init premise for next()
     while (this.contains(child, this.curPt)) {
 

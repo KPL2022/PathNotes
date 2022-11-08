@@ -28,6 +28,9 @@ pre generative order update items:
   - document assertions like connectedness of commands e user input as premise of fx like buildextree etc etc
   - mm controls -> using chaining events to address the repeated user input stuff
   - mm controls -> the on user input detection logic should be ironed out more
+  - initial attempt to more effortly address out of space errors
+  - fragile RBSS from fixed parent location
+  - try to in best effort manner preserve user bubble orientation when re-allocing for more reasonable space usage
 
 [v] 3.4.1 mm-service 
   [v] clean up src code -> update and trim comments
@@ -80,53 +83,51 @@ pre generative order update items:
   [v] link tracing now uses scaled dy/dx comparison for better pixel -> block mapping
   [v] but the way blocks are mapped, allows for "x" shaped cross links unintended
 
-3.4.8 various
-  - blow out disp to take up available room more aggressively
-  - initial attempt to more effortly address out of space errors
-  - fragile RBSS from fixed parent location
+[v] 3.4.8 reference bundle block info into Mm-isque objects
 
-3.4.8 reference bundle block info into Mm-isque objects
-
-3.4.9 review other aspects of mm canvas generative basis
-
-3.4.10 testing
+[v] 3.4.9 testing
   - feather out the canvas scope testing framework
+    - mostly just using testpoints col for visualization
+    - using techniques thru exploratory learning
+      - invariants, assertions, expectation calibration
 
-3.4.11 restoring program internal coherence
+[v] 3.4.10 restoring program internal coherence
   - for canvas related data types
     - review obj functions, update or trim as necessary
     - check how reference storing is handled across the framework
   - reflect data-typing changes to related components to restore program internal coherence
 
-3.4.12 review logic used in response functions
+[v] 3.5 ownership based free that includes associated links
 
-3.4.13 normalizing display window and cell related dimension settings
+[v] 3.6 recursive child relocate needs to be perform in an atomic manner
+      - else not enough context to know if child's child will be deadlocked out of space
 
+3.7 prepping for backend integration 1
+  - review and clean up src code after 3.4.7
+  - blow out disp to take up available room more aggressively
+  - resolve the equal level cmd bug in build execution tree()
+  - normalizing display window and cell related dimension settings
+
+3.8 prep 2
+  - review other aspects of mm canvas generative basis
+  - review logic used in response functions
+
+continue to [7]
 
 ------------------------------------------------------------------------------------------------------
 post processing & misc items:
 
-3.4.a try to in best effort manner preserve user bubble orientation when re-allocing for more reasonable space usage
-
-3.5. ownership based free that includes associated links
-
-3.6. recursive child relocate needs to be perform in an atomic manner
-      - else not enough context to know if child's child will be deadlocked out of space
-
-4. update reasonable space alloc framework with links on radar, the radial search should
+[v] 4. update reasonable space alloc framework with links on radar, the radial search should
     check for link space availability as well to determine if a point in scope can host a child node specifically
       - iterative deepening with lim >= 1, update out old position as lim structure
 
-5. link command should handle the case that a child is taken from its parent and respond in a 
+[v] 5. link command should handle the case that a child is taken from its parent and respond in a 
     reasonable manner
 
-6. start working on the generative order update, clean up the src code and review the current framework
+[v] 6. start working on the generative order update, clean up the src code and review the current framework
 
 7. how should mindmaps be represented in persistent storage?
+  - initial experience with from persistent storage context switch implementation
 
-8. how to save/load mindmap module context from persistent storage?
-
-9. implement backend services, most relevantly, for the mindmap and todo list modules
-
-10. todo list commit feature, recurring daily compartmentalization tasks
+*******************this concludes Path Notes v0.7 functional mindmap module
 
