@@ -1,5 +1,4 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { platformBrowser } from '@angular/platform-browser';
 
 import { LinkPath, MmBlock, MmLink, MmNode } from '../data/DefMindmapStructs';
 import { OperatorName, SystemCommand } from '../data/DefSysCmd'
@@ -25,15 +24,16 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   rowSize = Math.floor(0.05 * this.frameHeight);
   estimateLayerSize = 3; // estimate 8 child nodes per layer for RBSS search depth recommendation
   perLayerSearchLim = 3;
+  minSearchDist = 2;
 
   constructor() { 
 
     this.initOrigin();
 
-    var testPoolSize = 15;
+    var testPoolSize = 20;
     var testLinkCnt = 10;
 
-    this.generateExample(testPoolSize, testLinkCnt);
+    // this.generateExample(testPoolSize, testLinkCnt);
   }
 
   generateExample(testPoolSize: number, testLinkCnt: number) {
@@ -59,16 +59,25 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         idxB = Math.floor(Math.random() * this.activeNodes.length);
       }
 
-      // assert idxA !== idxB, make sure B.exclude does not contain A or any of A's descendants
-      var bExcludes: string[] = exclusion.get(this.activeNodes[idxB]) as string[];
-      var aIncludes: string[] = [];
+      // assert idxA !== idxB
 
-      if (this.checkExclusion(this.activeNodes[idxA], bExcludes, aIncludes)) {
+      // make sure child is not alr parent of parent to prevent cycles
+      var aExcludes: string[] = exclusion.get(this.activeNodes[idxA]) as string[];
+      var findB: string | undefined = aExcludes.find((str: string) => str === this.activeNodes[idxB].getId());
+
+      if (findB === undefined) {
 
         // generate link
         this.generateLink(this.activeNodes[idxA], this.activeNodes[idxB]);
 
-        // add A and descendant info to B exclude
+        // generate a's id list
+        var aIncludes: string[] = [];
+        this.fillIdList(this.activeNodes[idxA], aIncludes);
+
+        // get b id list
+        var bExcludes: string[] = exclusion.get(this.activeNodes[idxB]) as string[];
+
+        // merge a id list into b id list
         for (var i = 0; i < aIncludes.length; i++) {
 
           var findE = bExcludes.find((str: string) => str === aIncludes[i]);
@@ -82,29 +91,18 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     }
   }
 
-  checkExclusion(rt: MmNode, excludes: string[], idList: string[]): boolean {
+  fillIdList(rt: MmNode, idList: string[]) {
 
     idList.push(rt.getId());
 
-    var findSelf: string | undefined = excludes.find((str: string) => str === rt.getId());
+    var children: MmLink[] = rt.getChildrenLinks();
 
-    var retVal: boolean = findSelf === undefined;
+    for (var i = 0; i < children.length; i++) {
 
-    if (retVal && rt.getChildrenLinks().length !== 0) {
+      var child: MmNode = children[i].getChild();
 
-      var children: MmLink[] = rt.getChildrenLinks();
-      var i = 0;
-
-      while (i < children.length && retVal) {
-
-        var child = children[i].getChild();
-
-        retVal = retVal && this.checkExclusion(child, excludes, idList);
-        i++;
-      }
+      this.fillIdList(child, idList);
     }
-
-    return retVal;
   }
 
   initOrigin() {
@@ -504,7 +502,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
       var lim = this.computeLim(child, parent);
 
-      var k = 1;
+      var k = this.minSearchDist;
       var relocationComplete = false;
 
       while (k <= lim && !relocationComplete) {
@@ -772,7 +770,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
      *  - if path is clear, alloc link, do setup -> return true
      */
 
-
     // get port locations
     var portLocationPack = this.getPortLocations(child, parent);
     var st = portLocationPack[0];
@@ -794,14 +791,18 @@ export class MmCanvasComponent implements OnInit, OnChanges {
      */
     var path!: LinkPath;
 
+    var testing: number[][] = [];
+
     if (child.getCx() === parent.getCx()) {
 
       // dx = 0, sample in y
-      path = new LinkPath('y', st, ed, this.rowSize, this.colSize, child, parent);
+      path = new LinkPath('y', st, ed, this.rowSize, this.colSize, child, parent, testing);
     } else {
 
-      path = new LinkPath('x', st, ed, this.rowSize, this.colSize, child, parent);
+      path = new LinkPath('x', st, ed, this.rowSize, this.colSize, child, parent, testing);
     }
+
+    testing.forEach((pt: number[]) => this.testPoints.push([pt[0], pt[1]]));
 
     var blks: MmBlock[] = [];
 
@@ -811,6 +812,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       var blkId: number[] = path.next();
       var blkRef: MmBlock = this.nodeOrigin[blkId[0]][blkId[1]];
 
+      // console.log(blkRef);
+
       if (!blkRef.isFree()) {
 
         return false;
@@ -819,6 +822,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         blks.push(blkRef);
       }
     }
+
+    // console.log("^^");
 
     // path is clear, finish up allocing link
     var link: MmLink = child.getParentLink() as MmLink;
@@ -830,6 +835,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     link.setSt(st[0], st[1]);
     link.setEd(ed[0], ed[1]);
+
+    console.log(link);
 
     return true;
 
@@ -943,12 +950,12 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
       if (from.getCy() > to.getCy()) {
 
-        ret.push([from.getCx(), from.getCy() + b]);
-        ret.push([to.getCx(), to.getCy() - b]);
-      } else {
-
         ret.push([from.getCx(), from.getCy() - b]);
         ret.push([to.getCx(), to.getCy() + b]);
+      } else {
+
+        ret.push([from.getCx(), from.getCy() + b]);
+        ret.push([to.getCx(), to.getCy() - b]);
       }
 
       return ret;

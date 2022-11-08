@@ -71,13 +71,19 @@ pre generative order update items:
   [v] based on RBSS, write recursive block/link pair space allocation alogrithm
     * this will later serve as generate link function
 
-3.4.6 stablize RBSS performance
-  - what to do with cycles? haven't thought about it much yet, but this is a generic graph, at least, the conception so far is that it is
-    - by single path assertion, can restrict mindmaps to be trees, but is it the reasonable decision?
-  - generate example restrict to trees only (no cycles)
-  - fragile RBSS from fixed parent location
+[v] 3.4.6 stablize RBSS performance
+  [v] what to do with cycles? haven't thought about it much yet, but this is a generic graph, at least, the conception so far is that it is
+    [v] by single path assertion, can restrict mindmaps to be trees, but is it the reasonable decision?
+  [v] generate example restrict to trees only (no cycles)
+  
+[v] 3.4.7 better link tracing method
+  [v] link tracing now uses scaled dy/dx comparison for better pixel -> block mapping
+  [v] but the way blocks are mapped, allows for "x" shaped cross links unintended
 
-3.4.7 better link tracing method
+3.4.8 various
+  - blow out disp to take up available room more aggressively
+  - initial attempt to more effortly address out of space errors
+  - fragile RBSS from fixed parent location
 
 3.4.8 reference bundle block info into Mm-isque objects
 
