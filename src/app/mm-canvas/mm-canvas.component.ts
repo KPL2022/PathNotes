@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { platformBrowser } from '@angular/platform-browser';
 
-import { MmBlock, MmLink, MmNode } from '../data/DefMindmapStructs';
+import { LinkPath, MmBlock, MmLink, MmNode } from '../data/DefMindmapStructs';
 import { OperatorName, SystemCommand } from '../data/DefSysCmd'
 
 @Component({
@@ -23,13 +23,14 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   frameHeight = 750;
   colSize = Math.floor(0.03 * this.frameWidth);
   rowSize = Math.floor(0.05 * this.frameHeight);
-  estimateLayerSize = 8; // estimate 8 child nodes per layer for RBSS search depth recommendation
+  estimateLayerSize = 3; // estimate 8 child nodes per layer for RBSS search depth recommendation
+  perLayerSearchLim = 3;
 
   constructor() { 
 
     this.initOrigin();
 
-    var testPoolSize = 20;
+    var testPoolSize = 15;
     var testLinkCnt = 10;
 
     this.generateExample(testPoolSize, testLinkCnt);
@@ -567,7 +568,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   recommendLim(node: MmNode) {
 
-    return 1 + Math.floor(node.getClusterSize() / this.estimateLayerSize);
+    return this.perLayerSearchLim * (Math.floor(node.getClusterSize() / this.estimateLayerSize) + 1);
   }
 
   getRadialLayer(bounds: number[], dims: number[]): MmBlock[] {
@@ -659,7 +660,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       child.setCx(cx);
       child.setCy(cy);
 
-      if (this.linkable(child, parent, dims)) {
+      if (this.linkable(child, parent)) {
 
         parent.setClusterSize(parent.getClusterSize() + child.getClusterSize());
     
@@ -749,118 +750,173 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     // }
   }
 
-  linkable(child: MmNode, parent: MmNode, dims: number[]): boolean {
+  linkable(child: MmNode, parent: MmNode): boolean {
 
     /**
-     * - assert link type -> straightline
-     * - assert port location within bounds of host nodes
-     * 
      * pseudo code:
      * 
-     * 1. obtain port locations
-     * 2. handle dX = 0 case, if otherwise, compute slope m from ports
-     * 3. find intersection between hode node frame line and port, set as start/end points
-     * 4. for each progression in x from start_x -> end_x
-     *      - compare current y val to anchor line's y val for dY
-     *          - itr over blocks contained in dY's worth of change
-     *              - if not free -> early return false
-     *              - if free -> do nothing
-     * 5. if not return by end -> return true
+     * 0. mats & inv:
+     *  - port location within bounds of host nodes
+     *  - link type === straight line
+     * 
+     * 1. goals:
+     *  - check if child node can straight line link parent
+     *  - if so, alloc link
+     *  - return success as boolean
+     * 
+     * 2. plan:
+     *  - get port locations
+     *  - setup equation with 2 points
+     *  - sample points at intervals such that every block path crosses will be checked
+     *  - check if any block is taken, if so -> return false
+     *  - if path is clear, alloc link, do setup -> return true
      */
 
-    // normalize entity params later
-    var entityWidth = dims[0];
-    var entityHeight = dims[1];
 
     // get port locations
     var portLocationPack = this.getPortLocations(child, parent);
     var st = portLocationPack[0];
     var ed = portLocationPack[1];
 
-    // handle dX = 0 case
+    // set equation, handle dx = 0 case
+
+    /**
+     * LinkPath:
+     * - sample direction: x or y
+     * - slope
+     * - intercept: compute by given point on line
+     * - sample frequency
+     *  - need to know some info about the grid
+     * 
+     * methods:
+     * - constructor: compose slope, intercept from 2 pts, mem sample dir, with given info compute sample freq
+     * - next: give next sample point
+     */
+    var path!: LinkPath;
+
     if (child.getCx() === parent.getCx()) {
 
-      // TODO: imp
-      return false;
+      // dx = 0, sample in y
+      path = new LinkPath('y', st, ed, this.rowSize, this.colSize, child, parent);
     } else {
 
-      // compute slope m
-      var m = (child.getCy() - parent.getCy()) / (child.getCx() - parent.getCx());
+      path = new LinkPath('x', st, ed, this.rowSize, this.colSize, child, parent);
+    }
 
-      var xDir!: number;
-      var yDir!: number;
+    var blks: MmBlock[] = [];
 
-      if (child.getCx() > parent.getCx()) {
+    // sample points on line, conv to block ref, early return false if block taken
+    while (path.hasNext()) {
 
-        xDir = -1;
-      } else {
+      var blkId: number[] = path.next();
+      var blkRef: MmBlock = this.nodeOrigin[blkId[0]][blkId[1]];
 
-        xDir = 1;
-      }
-
-      if (child.getCy() > parent.getCy()) {
-
-        yDir = -1;
-      } else {
-
-        yDir = 1;
-      }
-
-      // find intersection between ports and host node frame lines
-      // ports e line: y - st[1] = m (x - st[0])
-      // host node frame lines: y = dummy.getCy() + yDir * b and y = parent.getCy() + -1 * yDir * b
-      var stY = child.getCy() + yDir * this.rowSize;
-      var stX = (stY + m * st[0] - st[1]) / m;
-
-      var edY = parent.getCy() + -1 * yDir * this.rowSize;
-      var edX = (edY + m * st[0] - st[1]) / m;
-
-      // this.testPoints.push([stX, stY]);
-      // this.testPoints.push([edX, edY]);
-
-      var blks: MmBlock[] = [];
-
-      // handle end points first
-      if (!this.projectLink(stX, stY, st, xDir, m, this.toAnchorLine(stX, xDir), yDir, blks) || 
-            !this.projectLink(edX, edY, st, -1 * xDir, m, this.toAnchorLine(edX, -1 * xDir), -1 * yDir, blks)) {
+      if (!blkRef.isFree()) {
 
         return false;
-      }
-
-      // check anchor lines in between
-      if (xDir > 0) {
-
-        for (var i = this.toAnchorLine(stX, xDir); i < this.toAnchorLine(edX, -1 * xDir); i = i + this.colSize) {
-
-          if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i + this.colSize, yDir, blks)) {
-
-            return false;
-          }
-        }
       } else {
 
-        for (var i = this.toAnchorLine(stX, xDir); i > this.toAnchorLine(edX, -1 * xDir); i = i - this.colSize) {
-
-          if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i - this.colSize, yDir, blks)) {
-
-            return false;
-          }
-        }
+        blks.push(blkRef);
       }
-
-      // complete link setup
-      var link: MmLink = child.getParentLink() as MmLink;
-      
-      this.freeLink(link);
-
-      link.setBlks(blks);
-      blks.forEach((blk: MmBlock) => blk.setOwner(link));
-
-      link.setSt(st[0], st[1]);
-      link.setEd(ed[0], ed[1]);
-
-      return true;
     }
+
+    // path is clear, finish up allocing link
+    var link: MmLink = child.getParentLink() as MmLink;
+      
+    this.freeLink(link);
+
+    link.setBlks(blks);
+    blks.forEach((blk: MmBlock) => blk.setOwner(link));
+
+    link.setSt(st[0], st[1]);
+    link.setEd(ed[0], ed[1]);
+
+    return true;
+
+    // // handle dX = 0 case
+    // if (child.getCx() === parent.getCx()) {
+
+    //   // TODO: imp
+    //   return false;
+    // } else {
+
+    //   // compute slope m
+    //   var m = (child.getCy() - parent.getCy()) / (child.getCx() - parent.getCx());
+
+    //   var xDir!: number;
+    //   var yDir!: number;
+
+    //   if (child.getCx() > parent.getCx()) {
+
+    //     xDir = -1;
+    //   } else {
+
+    //     xDir = 1;
+    //   }
+
+    //   if (child.getCy() > parent.getCy()) {
+
+    //     yDir = -1;
+    //   } else {
+
+    //     yDir = 1;
+    //   }
+
+    //   // find intersection between ports and host node frame lines
+    //   // ports e line: y - st[1] = m (x - st[0])
+    //   // host node frame lines: y = dummy.getCy() + yDir * b and y = parent.getCy() + -1 * yDir * b
+    //   var stY = child.getCy() + yDir * this.rowSize;
+    //   var stX = (stY + m * st[0] - st[1]) / m;
+
+    //   var edY = parent.getCy() + -1 * yDir * this.rowSize;
+    //   var edX = (edY + m * st[0] - st[1]) / m;
+
+    //   // this.testPoints.push([stX, stY]);
+    //   // this.testPoints.push([edX, edY]);
+
+    //   var blks: MmBlock[] = [];
+
+    //   // handle end points first
+    //   if (!this.projectLink(stX, stY, st, xDir, m, this.toAnchorLine(stX, xDir), yDir, blks) || 
+    //         !this.projectLink(edX, edY, st, -1 * xDir, m, this.toAnchorLine(edX, -1 * xDir), -1 * yDir, blks)) {
+
+    //     return false;
+    //   }
+
+    //   // check anchor lines in between
+    //   if (xDir > 0) {
+
+    //     for (var i = this.toAnchorLine(stX, xDir); i < this.toAnchorLine(edX, -1 * xDir); i = i + this.colSize) {
+
+    //       if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i + this.colSize, yDir, blks)) {
+
+    //         return false;
+    //       }
+    //     }
+    //   } else {
+
+    //     for (var i = this.toAnchorLine(stX, xDir); i > this.toAnchorLine(edX, -1 * xDir); i = i - this.colSize) {
+
+    //       if (!this.projectLink(i, m * (i - st[0]) + st[1], st, xDir, m, i - this.colSize, yDir, blks)) {
+
+    //         return false;
+    //       }
+    //     }
+    //   }
+
+    //   // complete link setup
+    //   var link: MmLink = child.getParentLink() as MmLink;
+      
+    //   this.freeLink(link);
+
+    //   link.setBlks(blks);
+    //   blks.forEach((blk: MmBlock) => blk.setOwner(link));
+
+    //   link.setSt(st[0], st[1]);
+    //   link.setEd(ed[0], ed[1]);
+
+    //   return true;
+    // }
   }
 
   getPortLocations(from: MmNode, to: MmNode): number[][] {

@@ -260,3 +260,166 @@ export class MmLink {
     this.ed[1] = b;
   }
 }
+
+export class LinkPath {
+
+  private sampleAxis: string;
+  private st: number[];
+  private ed: number[];
+  private rowSize: number;
+  private colSize: number;
+  
+  private mjAxDir: number;
+  private minAxDir: number;
+  private slope: number;
+  private intercept: number;
+  private dxToNxt: number;
+  private dyToNxt: number;
+
+  private edBlk: number[];
+
+  constructor(sampleAxis: string, st: number[], ed: number[], rowSize: number, colSize: number, child: MmNode, parent: MmNode) {
+
+    this.sampleAxis = sampleAxis;
+    this.st = st;
+    this.ed = ed;
+    this.rowSize = rowSize;
+    this.colSize = colSize;
+
+    if (sampleAxis === 'x') {
+
+      this.mjAxDir = st[0] > ed[0] ? -1 : 1;
+      this.minAxDir = st[1] > ed[1] ? -1 : 1;
+      this.slope = (st[1] - ed[1]) / (st[0] - ed[0]);
+      this.intercept = st[1] - this.slope * st[0];
+      
+      this.dyToNxt = this.xGetNextDy();
+      this.dxToNxt = this.xGetNextDx();
+    } else {
+
+      this.mjAxDir = st[1] > ed[1] ? -1 : 1;
+      this.minAxDir = 1;
+      this.slope = 0;
+      this.intercept = st[0];
+      
+      this.dyToNxt = this.yGetNextDy();
+      this.dxToNxt = 999;
+    }
+
+    this.edBlk = this.coordToBlkId(ed);
+
+    // provide offset to st to init premise for next()
+    while (by peek, if child contains next blk) {
+
+      next block = this.next();
+    }
+
+    // update has next to check for parent blk ownership instead
+  }
+
+  private yGetNextDy() {
+
+    if (this.mjAxDir > 0) {
+
+      return this.rowSize - this.st[1] % this.rowSize;
+    } else {
+
+      return this.st[1] % this.rowSize;
+    }
+  }
+
+  private xGetNextDy() {
+
+    /**
+     * 1. set current y coord
+     * 2. compute y coord of anchor line
+     * 3. dy is diff(anchor_y, cur_y)
+     * 
+     * case on direction
+     */
+
+    // assert current y === st[1]
+    if (this.minAxDir > 0) {
+
+      var anchorY = this.rowSize - this.st[1] % this.rowSize;
+      
+      return anchorY - this.st[1];
+    } else {
+
+      return this.st[1] % this.rowSize;
+    }
+  }
+
+  private xGetNextDx() {
+
+    if (this.mjAxDir > 0) {
+
+      return this.colSize - this.st[0] % this.colSize;
+    } else {
+
+      return this.st[0] % this.colSize;
+    }
+  }
+
+  private coordToBlkId(pt: number[]): number[] {
+
+    var rowId = Math.floor(pt[1] / this.rowSize);
+    var colId = Math.floor(pt[0] / this.colSize);
+
+    return [rowId, colId];
+  }
+
+  // assert st is alr next would-be, check if st is in same block as ed
+  hasNext(): boolean {
+
+    var stBlk: number[] = this.coordToBlkId(this.st);
+
+    return stBlk[0] === this.edBlk[0] && stBlk[1] === this.edBlk[1];
+  }
+
+  // assert next val is alr ready, prepping for next next, returning next
+  next(): number[] {
+
+    var ret: number[] = this.coordToBlkId(this.st);
+
+    // prep for next st, case on sampling axis
+    if (this.sampleAxis === 'x') {
+
+      this.incX();
+    } else {
+
+      this.incY();
+    }
+
+    return ret;
+  }
+
+  incY() {
+
+    // dx === 0 special case, edit st[1] to progress
+    this.st[1] += this.mjAxDir * (this.dyToNxt + 1);
+
+    // update dyToNxt
+    this.dyToNxt = this.yGetNextDy();
+  }
+
+  incX() {
+
+    // edit st[0] or st[1] based on min(dxToNxt, dyToNxt)
+    if (this.dxToNxt < this.dyToNxt) {
+
+      // update st[0], update st[1] from st[0]
+      this.st[0] += this.mjAxDir * this.dxToNxt;
+      this.st[1] = this.slope * this.st[0] + this.intercept;
+    } else {
+
+      // update st[1], update st[0] from st[1]
+      this.st[1] += this.minAxDir * this.dyToNxt;
+      this.st[0] = (this.st[1] - this.intercept) / this.slope;
+    }
+
+    // update dxToNxt, dyToNxt
+    this.dxToNxt = this.xGetNextDx();
+    this.dyToNxt = this.xGetNextDy();
+  }
+}
