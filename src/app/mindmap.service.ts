@@ -217,6 +217,12 @@ export class MindmapService {
           if (sysCmd.getCmdLvl() >= prev.getCmdLvl()) {
 
             operands.push(prev);
+
+            // check for head update here
+            if (sysCmd.getCmdLvl() >= head[0].getCmdLvl()) {
+
+              head[0] = sysCmd;
+            }
           } else {
 
             operands.push(leftOpt);
@@ -226,12 +232,6 @@ export class MindmapService {
       }
 
       operands.push(this.buildExecutionTree(rt, src.substring(cmdDef.index).trim(), head, sysCmd));
-      
-      // check self for head update
-      if (sysCmd.getCmdLvl() > head[0].getCmdLvl()) {
-
-        head[0] = sysCmd;
-      }
 
       return retVal;
     }

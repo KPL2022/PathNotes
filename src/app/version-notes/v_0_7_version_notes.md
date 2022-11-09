@@ -31,6 +31,7 @@ pre generative order update items:
   - initial attempt to more effortly address out of space errors
   - fragile RBSS from fixed parent location
   - try to in best effort manner preserve user bubble orientation when re-allocing for more reasonable space usage
+  - live pulling from github, and init mindmap from specific md files?
 
 [v] 3.4.1 mm-service 
   [v] clean up src code -> update and trim comments
@@ -102,15 +103,19 @@ pre generative order update items:
 [v] 3.6 recursive child relocate needs to be perform in an atomic manner
       - else not enough context to know if child's child will be deadlocked out of space
 
-3.7 prepping for backend integration 1
-  - review and clean up src code after 3.4.7
-  - blow out disp to take up available room more aggressively
-  - resolve the equal level cmd bug in build execution tree()
-  - normalizing display window and cell related dimension settings
+[v] 3.7 prepping for backend integration 1
+  [v] review and clean up src code after 3.4.7
+  [v] implement better generateExample()
+  [v] blow out disp to take up available room more aggressively
+    - parameters still need tuning, and the full imp of RBSS awaits as well
+  [v] resolve the equal level cmd bug in build execution tree()
 
 3.8 prep 2
   - review other aspects of mm canvas generative basis
   - review logic used in response functions
+  - implement rest of response functions
+  - fail space allocation more gracefully
+  - normalizing display window and cell related dimension settings
 
 continue to [7]
 
@@ -131,3 +136,16 @@ post processing & misc items:
 
 *******************this concludes Path Notes v0.7 functional mindmap module
 
+extras
+  - getting canvas onChange to proc even with repeated user input
+  - consider how 3+ bullet points in this doc can be incorporated into the GO update
+  - bubble dims !== border box dims, check for a,b usage when entityWidth/Height should be used
+  - lots of 'diff-by-1' kind of directional differences, recheck later checklinkspace stuff
+  - review src code fx ordering for 3.4.2 & +
+  - document assertions like connectedness of commands e user input as premise of fx like buildextree etc etc
+  - mm controls -> using chaining events to address the repeated user input stuff
+  - mm controls -> the on user input detection logic should be ironed out more
+  - initial attempt to more effortly address out of space errors
+  - fragile RBSS from fixed parent location
+  - try to in best effort manner preserve user bubble orientation when re-allocing for more reasonable space usage
+  - live pulling from github, and init mindmap from specific md files?

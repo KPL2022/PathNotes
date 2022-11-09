@@ -264,8 +264,6 @@ export class MmLink {
 export class LinkPath {
 
   private sampleAxis: string;
-  private st: number[];
-  private ed: number[];
   private rowSize: number;
   private colSize: number;
   
@@ -276,27 +274,19 @@ export class LinkPath {
   private dxToNxt: number;
   private dyToNxt: number;
 
-  private child: MmNode;
   private parent: MmNode;
 
   private curPt: number[];
 
-  private testing: number[][];
-
-  constructor(sampleAxis: string, st: number[], ed: number[], rowSize: number, colSize: number, child: MmNode, parent: MmNode, testing: number[][]) {
+  constructor(sampleAxis: string, st: number[], ed: number[], rowSize: number, colSize: number, child: MmNode, parent: MmNode) {
 
     this.sampleAxis = sampleAxis;
-    this.st = st;
-    this.ed = ed;
     this.rowSize = rowSize;
     this.colSize = colSize;
 
-    this.child = child;
     this.parent = parent;
 
     this.curPt = [st[0], st[1]];
-
-    this.testing = testing;
 
     if (sampleAxis === 'x') {
 
@@ -349,18 +339,21 @@ export class LinkPath {
      */
 
     // assert current y === st[1]
-
-    var dy!: number;
-
     if (this.minAxDir > 0) {
 
-      dy = this.rowSize - this.curPt[1] % this.rowSize;
+      return this.rowSize - this.curPt[1] % this.rowSize;
     } else {
 
-      dy = this.curPt[1] % this.rowSize;
+      return this.curPt[1] % this.rowSize;
     }
+  }
 
-    return Math.abs(dy / this.slope);
+  // assert scaledDy is a magnitude value (>= 0)
+  private xGetScaledDy():number {
+
+    var ret = this.dyToNxt / this.slope;
+
+    return ret < 0 ? ret * -1 : ret;
   }
 
   private xGetNextDx() {
@@ -402,8 +395,6 @@ export class LinkPath {
 
     var ret: number[] = this.coordToBlkId(this.curPt);
 
-    this.testing.push([this.curPt[0], this.curPt[1]]);
-
     // prep for next st, case on sampling axis
     if (this.sampleAxis === 'x') {
 
@@ -427,8 +418,8 @@ export class LinkPath {
 
   incX() {
 
-    // edit st[0] or st[1] based on min(dxToNxt, dyToNxt)
-    if (this.dxToNxt < this.dyToNxt) {
+    // edit st[0] or st[1] based on min(dxToNxt, scaled dy)
+    if (this.dxToNxt < this.xGetScaledDy()) {
 
       // update st[0], update st[1] from st[0]
       this.curPt[0] += this.mjAxDir * ((this.dxToNxt) + 1);
@@ -436,7 +427,7 @@ export class LinkPath {
     } else {
 
       // update st[1], update st[0] from st[1]
-      this.curPt[1] += this.minAxDir * (Math.abs(this.dyToNxt * this.slope) + 1);
+      this.curPt[1] += this.minAxDir * (this.dyToNxt + 1);
       this.curPt[0] = (this.curPt[1] - this.intercept) / this.slope;
     }
 

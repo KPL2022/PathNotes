@@ -22,87 +22,66 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   frameHeight = 750;
   colSize = Math.floor(0.03 * this.frameWidth);
   rowSize = Math.floor(0.05 * this.frameHeight);
-  estimateLayerSize = 3; // estimate 8 child nodes per layer for RBSS search depth recommendation
-  perLayerSearchLim = 3;
+  defaultSearchDist = 2;
+  estimateLayerSize = 3;  // estimate 8 child nodes per layer for RBSS search depth recommendation
+  perLayerSearchLim = 2;
   minSearchDist = 1;
+
+  createThreshold = 8;  // allow create when [0~9] lands < 8
+  diceLim = 10;
+  nary = 4;  // up to nary number of children for gen example
 
   constructor() { 
 
     this.initOrigin();
 
-    var testPoolSize = 20;
-    var testLinkCnt = 10;
+    var testDepth = 3;
 
-    // this.generateExample(testPoolSize, testLinkCnt);
+    this.generateExample(testDepth);
   }
 
-  generateExample(testPoolSize: number, testLinkCnt: number) {
+  generateExample(depth: number): MmNode | null {
 
-    // cycle prevention with HT
-    var exclusion: Map<MmNode, string[]> = new Map();
+    var ret: MmNode | null = null;
 
-    for (var i = 0; i < testPoolSize; i++) {
+    // roll dice to gen self
+    if (this.hasCreatePermission()) {
 
-      var node: MmNode = this.generate(String(i));
-
-      // register associated HT
-      exclusion.set(node, []);
+      ret = this.generate(String(this.ids++));
+      console.log(ret);
     }
 
-    for (var j = 0; j < testLinkCnt; j++) {
+    if (ret !== null && depth > 0) {
 
-      var idxA = Math.floor(Math.random() * this.activeNodes.length);
-      var idxB = Math.floor(Math.random() * this.activeNodes.length);
+      var childCnt = Math.floor(Math.random() * this.nary);
+      var children: any[] = [];
 
-      while (idxA === idxB) {
+      // create child nodes
+      for (var i = 0; i < childCnt; i++) {
 
-        idxB = Math.floor(Math.random() * this.activeNodes.length);
+        children.push(this.generateExample(depth - 1));
       }
 
-      // assert idxA !== idxB
+      // link child nodes to self
+      for (var j = 0; j < children.length; j++) {
 
-      // make sure child is not alr parent of parent to prevent cycles
-      var aExcludes: string[] = exclusion.get(this.activeNodes[idxA]) as string[];
-      var findB: string | undefined = aExcludes.find((str: string) => str === this.activeNodes[idxB].getId());
+        var child = children[j];
 
-      if (findB === undefined) {
+        if (child !== null) {
 
-        // generate link
-        this.generateLink(this.activeNodes[idxA], this.activeNodes[idxB]);
-
-        // generate a's id list
-        var aIncludes: string[] = [];
-        this.fillIdList(this.activeNodes[idxA], aIncludes);
-
-        // get b id list
-        var bExcludes: string[] = exclusion.get(this.activeNodes[idxB]) as string[];
-
-        // merge a id list into b id list
-        for (var i = 0; i < aIncludes.length; i++) {
-
-          var findE = bExcludes.find((str: string) => str === aIncludes[i]);
-
-          if (findE === undefined) {
-
-            bExcludes.push(aIncludes[i]);
-          }
+          this.generateLink(child as MmNode, ret);
         }
       }
     }
+
+    return ret;
   }
 
-  fillIdList(rt: MmNode, idList: string[]) {
+  hasCreatePermission(): boolean {
 
-    idList.push(rt.getId());
+    var dice: number = Math.floor(Math.random() * this.diceLim);
 
-    var children: MmLink[] = rt.getChildrenLinks();
-
-    for (var i = 0; i < children.length; i++) {
-
-      var child: MmNode = children[i].getChild();
-
-      this.fillIdList(child, idList);
-    }
+    return dice < this.createThreshold; 
   }
 
   initOrigin() {
@@ -569,7 +548,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   recommendLim(node: MmNode) {
 
-    return this.perLayerSearchLim * (Math.floor(node.getClusterSize() / this.estimateLayerSize) + 1);
+    return this.defaultSearchDist + this.perLayerSearchLim * Math.floor(node.getClusterSize() / this.estimateLayerSize);
   }
 
   getRadialLayer(bounds: number[], dims: number[]): MmBlock[] {
@@ -714,41 +693,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     blks.forEach((bk: MmBlock) => bk.setOwner(nd));
 
     return true;
-    // var stIdx = -1;
-    // var rowIdx = -1;
-
-    // for (var i = 0; i < this.nodeOrigin.length && stIdx < 0; i++) {
-
-    //   var tmpIdx = this.nodeOrigin[i].indexOf(st);
-      
-    //   if (tmpIdx > -1) {
-
-    //     stIdx = tmpIdx;
-    //     rowIdx = i;
-    //   }
-    // }
-
-    // var a = this.nodeOrigin[rowIdx][stIdx + 1];
-    // var b = this.nodeOrigin[rowIdx][stIdx + 2];
-    
-    // var c = this.nodeOrigin[rowIdx + 1][stIdx];
-    // var d = this.nodeOrigin[rowIdx + 1][stIdx + 1];
-    // var e = this.nodeOrigin[rowIdx + 1][stIdx + 2];
-
-    // if (a.isFree() && b.isFree() && c.isFree() && d.isFree() && e.isFree()) {
-
-    //   st.isFree = false;
-    //   a.isFree = false;
-    //   b.isFree = false;
-    //   c.isFree = false;
-    //   d.isFree = false;
-    //   e.isFree = false;
-
-    //   return true;
-    // } else {
-
-    //   return false;
-    // }
   }
 
   linkable(child: MmNode, parent: MmNode): boolean {
@@ -794,18 +738,14 @@ export class MmCanvasComponent implements OnInit, OnChanges {
      */
     var path!: LinkPath;
 
-    var testing: number[][] = [];
-
     if (child.getCx() === parent.getCx()) {
 
       // dx = 0, sample in y
-      path = new LinkPath('y', st, ed, this.rowSize, this.colSize, child, parent, testing);
+      path = new LinkPath('y', st, ed, this.rowSize, this.colSize, child, parent);
     } else {
 
-      path = new LinkPath('x', st, ed, this.rowSize, this.colSize, child, parent, testing);
+      path = new LinkPath('x', st, ed, this.rowSize, this.colSize, child, parent);
     }
-
-    testing.forEach((pt: number[]) => this.testPoints.push([pt[0], pt[1]]));
 
     var blks: MmBlock[] = [];
 
@@ -815,8 +755,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       var blkId: number[] = path.next();
       var blkRef: MmBlock = this.nodeOrigin[blkId[0]][blkId[1]];
 
-      // console.log(blkRef);
-
       if (!blkRef.isFree()) {
 
         return false;
@@ -825,8 +763,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         blks.push(blkRef);
       }
     }
-
-    // console.log("^^");
 
     // path is clear, finish up allocing link
     var link: MmLink = child.getParentLink() as MmLink;
@@ -838,8 +774,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     link.setSt(st[0], st[1]);
     link.setEd(ed[0], ed[1]);
-
-    // console.log(link);
 
     return true;
   }
@@ -924,65 +858,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     // console.log(ret);
 
     return ret;
-  }
-
-  projectLink(stX: number, stY: number, src: number[], xDir: number, m: number, fX: number, yDir: number, blks: MmBlock[]) {
-
-    var fY = m * (fX - src[0]) + src[1];
-    var cId = Math.floor(fX / this.colSize);
-
-    if (xDir > 0) {
-
-      cId--;
-    }
-
-    // this.testPoints.push([fX, fY]);
-
-    if (yDir > 0) {
-
-      for (var i = stY; i <= fY; i = i + this.rowSize) {
-
-        if (!this.nodeOrigin[Math.floor(i / this.rowSize)][cId].isFree()) {
-  
-          return false;
-        } else {
-  
-          blks.push(this.nodeOrigin[Math.floor(i / this.rowSize)][cId]);
-        }
-      }
-    } else {
-
-      for (var i = stY; i >= fY; i = i - this.rowSize) {
-
-        var rId = Math.floor(i / this.rowSize);
-
-        if (i % this.rowSize === 0) {
-
-          rId--;
-        }
-
-        if (!this.nodeOrigin[rId][cId].isFree()) {
-  
-          return false;
-        } else {
-  
-          blks.push(this.nodeOrigin[rId][cId]);
-        }
-      }
-    }
-
-    return true;
-  }
-
-  toAnchorLine(stX: number, xDir: number) {
-
-    if (xDir > 0) {
-
-      return stX + (this.colSize - stX % this.colSize);
-    } else {
-
-      return stX - stX % this.colSize;
-    }
   }
 
   freeLink(link: MmLink) {
