@@ -111,9 +111,9 @@ pre generative order update items:
   [v] resolve the equal level cmd bug in build execution tree()
 
 3.8 prep 2
-  - review other aspects of mm canvas generative basis
-  - review logic used in response functions
-  - implement rest of response functions
+  [v] review other aspects of mm canvas generative basis
+  [v] review logic used in response functions
+  [v] implement rest of response functions
   - fail space allocation more gracefully
   - normalizing display window and cell related dimension settings
 
@@ -149,3 +149,4 @@ extras
   - fragile RBSS from fixed parent location
   - try to in best effort manner preserve user bubble orientation when re-allocing for more reasonable space usage
   - live pulling from github, and init mindmap from specific md files?
+  - lvl 3 response function -> merge implement

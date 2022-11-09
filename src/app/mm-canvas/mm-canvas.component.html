@@ -7,7 +7,7 @@
 
     <ng-container *ngFor="let node of activeNodes">
 
-      <ellipse [attr.cx]="node.getCx()" [attr.cy]="node.getCy()" rx="45" ry="32" style="fill:yellow;stroke:purple;stroke-width:2" />
+      <ellipse [attr.cx]="node.getCx()" [attr.cy]="node.getCy()" rx="45" ry="32" [attr.stroke]="node.hasSpotLight()" style="fill:white;stroke-width:5" />
       
       <text [attr.x]="node.getCx() - 60"[attr.y]="node.getCy() + 10" style="font-size: x-large">
         {{ node.getId() + ": " + node.getTxt() }}

@@ -121,7 +121,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   traceExecutionTree(rt: SystemCommand) {
 
-    if (rt.getCmdLvl() === 0) {
+    if (rt.getCmdLvl() <= 1) {
 
       return this.execute(rt, rt.getOperands());
     } else {
@@ -159,13 +159,21 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       return this.generate(args[0] as string);
     } else if (cName === OperatorName.edit) {
 
-      return this.edit(args[0] as string, args[1] as string);
+      // lvl 1 cmds have operands wrapped by generate
+      var a: string = (args[0] as SystemCommand).getOperands()[0] as string;
+      var b: string = (args[1] as SystemCommand).getOperands()[0] as string;
+
+      return this.edit(a, b);
     } else if (cName === OperatorName.highlight) {
 
-      return this.highlight(args[0] as string);
+      var a: string = (args[0] as SystemCommand).getOperands()[0] as string;
+
+      return this.highlight(a);
     } else if (cName === OperatorName.remove) {
 
-      return this.remove(args[0] as string);
+      var a: string = (args[0] as SystemCommand).getOperands()[0] as string;
+
+      return this.remove(a);
     } else if (cName === OperatorName.link) {
 
       return this.link(args[0] as MmNode, args[1] as MmNode);
@@ -234,13 +242,61 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     return nd;
   }
 
-  highlight(txtIdentifier: string) {
+  highlight(id: string) {
 
+    var nd: MmNode = this.generate(id);
+
+    nd.toggleSpotLight();
+
+    return nd;
   }
 
-  remove(txtIdentifier: string) {
+  remove(id: string) {
 
-    // TODO: imp, also remem to remove from activeNodes col
+    /**
+     * invars involved:
+     * 
+     * 1. links
+     *  - free link space
+     *  - update other end of links
+     *  - remove links from activeLinks collection
+     * 2. self node
+     *  - free node space
+     *  - remove node from activeNodes collection
+     * 
+     * 3. how much of unlink is useful here?
+     *  - basically all of 1.
+     */
+
+    // case on find results
+    var nd: MmNode | undefined = this.activeNodes.find((node: MmNode) => node.getId() === id);
+
+    if (nd !== undefined) {
+
+      // remove self from children
+      var children: MmLink[] = nd.getChildrenLinks();
+
+      while (children.length > 0) {
+
+        var child = children[0].getChild();
+
+        this.unlink(child, nd);
+      }
+
+      // if parent, remove self from parent
+      var pLink = nd.getParentLink();
+
+      if (pLink !== null) {
+
+        this.unlink(nd, pLink.getParent());
+      }
+
+      // free self space
+      this.freeNode(nd);
+
+      // remove self from activeNodes col
+      this.activeNodes.splice(this.activeNodes.indexOf(nd), 1);
+    }
   }
 
   link(child: MmNode, parent: MmNode) {

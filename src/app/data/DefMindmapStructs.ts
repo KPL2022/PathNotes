@@ -88,6 +88,8 @@ export class MmNode {
 
   private clusterSize: number;
 
+  private spotLight: boolean;
+
   constructor(parentLink: MmLink | null, x: number, y: number, txt: string, id: string) {
 
     this.parentLink = parentLink;
@@ -101,6 +103,18 @@ export class MmNode {
     this.blks = [];
 
     this.clusterSize = 1;
+
+    this.spotLight = false;
+  }
+
+  hasSpotLight(): string {
+
+    return this.spotLight ? "orange" : "black";
+  }
+
+  toggleSpotLight() {
+
+    this.spotLight = !this.spotLight;
   }
 
   getClusterSize() {
