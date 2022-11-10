@@ -127,9 +127,17 @@ pre generative order update items:
   [v] adjusted search limits to give more effort to searches
 
 3.9 prep 3
-  - user direct intervention (on click events)
+  - user direct intervention (mouse events)
     [v] z index overlay cover touching area issue resolve
-    - 
+    - user relocate
+      - mousedown -> grab
+        - store init location data
+      - mousemove -> trace
+        - liberate svg element from grid confines
+      - mouseup -> drop
+        - check if location can host node
+          - if so, relocate and adjust links
+          - else, return to stored prev stable state
   - normalizing display window and cell related dimension settings
   - direct user intervention export interfaces prepare
   - refactor mindmap module components

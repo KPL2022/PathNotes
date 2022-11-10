@@ -34,6 +34,11 @@ export class MmCanvasComponent implements OnInit {
   highLightColor = "orange";
   errorColor = "red";
 
+  pregrabCenter: number[] = [];
+  pregrabBlks: MmBlock[] = [];
+  spotlightNode!: MmNode;
+  dragOn: boolean = false;
+
   constructor(private mmCore: MindmapService) { 
 
     this.initOrigin();
@@ -112,18 +117,91 @@ export class MmCanvasComponent implements OnInit {
 
   }
 
-  grab(node: MmNode) {
+  grab(ev: MouseEvent) {
 
-    this.toggleSpotlight(node, this.highLightColor);
-    node.setTxt("haha");
+    var tmp: Element | null = document.elementFromPoint(ev.clientX, ev.clientY);
+
+    if (tmp !== null) {
+
+      var nodeId = tmp.getAttribute("nodeId");
+
+      var node: MmNode | undefined = this.activeNodes.find((nd: MmNode) => nd.getId() === nodeId);
+
+      if (node !== undefined) {
+
+        this.toggleSpotlight(node, this.highLightColor);
+        node.setTxt("haha");
+
+        this.pregrabCenter = [node.getCx(), node.getCy()];
+        this.pregrabBlks = node.getBlks();
+
+        this.spotlightNode = node;
+        this.freeNode(this.spotlightNode);
+        this.freeLink(this.spotlightNode.getParentLink() as MmLink);
+
+        this.dragOn = true;
+      }
+    }
   }
 
-  trace(node: MmNode) {
+  trace(ev: MouseEvent) {
 
+    if (this.dragOn) {
+
+      // stop text highlighting with drag
+      ev.preventDefault();
+
+      // trace self node
+      this.spotlightNode.setCx(this.spotlightNode.getCx() + ev.movementX);
+      this.spotlightNode.setCy(this.spotlightNode.getCy() + ev.movementY);
+
+      // adjust links
+
+      // parent
+      var pLink = this.spotlightNode.getParentLink();
+
+      if (pLink !== null) {
+
+        var ports = this.getPortLocations(this.spotlightNode, pLink.getParent());
+
+        pLink.setSt(ports[0][0], ports[0][1]);
+      }
+
+      // children
+    }
   }
 
-  drop(node: MmNode) {
+  drop(ev: MouseEvent) {
 
+    this.dragOn = false;
+
+    var a = 45;
+    var b = 32;
+
+    var leftEdge = this.spotlightNode.getCx() - a;
+    var excess = leftEdge % this.colSize;
+
+    this.spotlightNode.setCx(this.spotlightNode.getCx() - excess + 5);
+
+    var topEdge = this.spotlightNode.getCy() - b;
+
+    this.spotlightNode.setCy(this.spotlightNode.getCy() - topEdge % this.rowSize + 5);
+
+    // from cx,cy derive tl st block, then attempt migrate, if fail, revert to pregrab state
+    var dims = [3, 2];
+
+    var stBlkLoc = [Math.floor(this.spotlightNode.getCx() / this.colSize) - 1, Math.floor(this.spotlightNode.getCy() / this.rowSize) - 1];
+  
+    if (!this.migrate(this.nodeOrigin[stBlkLoc[1]][stBlkLoc[0]], this.spotlightNode, (this.spotlightNode.getParentLink() as MmLink).getParent(), dims)) {
+
+      // revert
+      this.freeNode(this.spotlightNode);
+      this.pregrabBlks.forEach((blk: MmBlock) => blk.setOwner(this.spotlightNode));
+      this.spotlightNode.setBlks(this.pregrabBlks);
+
+      this.spotlightNode.setCx(this.pregrabCenter[0]);
+      this.spotlightNode.setCy(this.pregrabCenter[1]);
+    }
   }
 
   parse(userInput: string) {
@@ -699,6 +777,7 @@ export class MmCanvasComponent implements OnInit {
     return this.recommendLim(child);
   }
 
+  // is this used anymore?
   distBetween(child: MmNode, parent: MmNode) {
     
     // TODO: normalize bubble dims

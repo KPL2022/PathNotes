@@ -286,4 +286,6 @@ https://computergraphics.stackexchange.com/questions/5302/how-can-i-verify-if-a-
 
 116. https://cloudengineering.studio/articles/the-right-way-to-componentize-svgs-for-your-angular-app
 
-117. 
+117. http://svg-whiz.com/svg/DragAndDrop.svg
+
+118. 
