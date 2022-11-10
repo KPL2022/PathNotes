@@ -3,12 +3,18 @@
   grid-column: 1 / 2;
   grid-row: 1 / 2;
 
+  display: grid;
+
+  grid-template-columns: 12% 70% 7% 6% 5%;
+  grid-template-rows: 6% 69% 10% 8% 7%;
 }
 
-.mm-grid {
+.grid-bkgd {
 
-  width: 100%;
-  height: 100%;
+  grid-column: 1 / 6;
+  grid-row: 1 / 6;
+
+  z-index: 1;
 
   border: 5px solid rgb(255, 192, 203);
   border-radius: 25px;

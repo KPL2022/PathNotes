@@ -1,17 +1,15 @@
-import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { platformBrowser } from '@angular/platform-browser';
+import { Component, OnInit } from '@angular/core';
 
 import { Highlightable, LinkPath, MmBlock, MmLink, MmNode } from '../data/DefMindmapStructs';
 import { OperatorName, SystemCommand } from '../data/DefSysCmd'
+import { MindmapService } from '../mindmap.service';
 
 @Component({
   selector: 'app-mm-canvas',
   templateUrl: './mm-canvas.component.html',
   styleUrls: ['./mm-canvas.component.css']
 })
-export class MmCanvasComponent implements OnInit, OnChanges {
-
-  @Input() drawRequest!: SystemCommand;
+export class MmCanvasComponent implements OnInit {
 
   activeNodes: MmNode[] = [];
   activeLinks: MmLink[] = [];
@@ -36,7 +34,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   highLightColor = "orange";
   errorColor = "red";
 
-  constructor() { 
+  constructor(private mmCore: MindmapService) { 
 
     this.initOrigin();
 
@@ -110,11 +108,27 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   ngOnInit(): void {
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  handleMenuEvent(input: string) {
 
-    if (!changes['drawRequest'].firstChange) {
-      this.interpretCmd(changes['drawRequest'].currentValue);
-    }
+  }
+
+  grab(node: MmNode) {
+
+    this.toggleSpotlight(node, this.highLightColor);
+    node.setTxt("haha");
+  }
+
+  trace(node: MmNode) {
+
+  }
+
+  drop(node: MmNode) {
+
+  }
+
+  parse(userInput: string) {
+
+    this.interpretCmd(this.mmCore.parse(userInput));
   }
 
   interpretCmd(sysCmd: SystemCommand) {

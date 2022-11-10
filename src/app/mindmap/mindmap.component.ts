@@ -1,7 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { SystemCommand } from '../data/DefSysCmd';
-
-import { MindmapService } from '../mindmap.service';
 
 @Component({
   selector: 'app-mindmap',
@@ -10,16 +7,8 @@ import { MindmapService } from '../mindmap.service';
 })
 export class MindmapComponent implements OnInit {
 
-  canvasQuery!: SystemCommand;
-
-  constructor(private mmCore: MindmapService) { }
+  constructor() { }
 
   ngOnInit(): void {
   }
-
-  parse(userInput: string) {
-
-    this.canvasQuery = this.mmCore.parse(userInput);
-  }
-
 }

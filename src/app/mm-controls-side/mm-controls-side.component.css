@@ -1,16 +1,17 @@
 :host {
 
-  grid-column: 2 / 3;
-  grid-row: 4 / 5;
+  grid-column: 4 / 5;
+  grid-row: 2 / 3;
 
   z-index: 2;
 }
 
-.mm-ctrls-input {
+.mm-ctrls-side {
 
   width: 100%;
   height: 100%;
 
+  background-color: white;
   border: 2px solid black;
   border-radius: 20px;
 }

@@ -128,9 +128,12 @@ pre generative order update items:
 
 3.9 prep 3
   - user direct intervention (on click events)
-    - z index overlay cover touching area issue resolve
+    [v] z index overlay cover touching area issue resolve
+    - 
   - normalizing display window and cell related dimension settings
-
+  - direct user intervention export interfaces prepare
+  - refactor mindmap module components
+    - remove mindmap wrapper
 
 continue to [7]
 
