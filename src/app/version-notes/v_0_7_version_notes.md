@@ -110,12 +110,27 @@ pre generative order update items:
     - parameters still need tuning, and the full imp of RBSS awaits as well
   [v] resolve the equal level cmd bug in build execution tree()
 
-3.8 prep 2
+[v] 3.8 prep 2
   [v] review other aspects of mm canvas generative basis
   [v] review logic used in response functions
   [v] implement rest of response functions
   - fail space allocation more gracefully
+    - establish 3 ways to edit highlight color of an entity in space (e node || link)
+      [v] reference thru highlight command (node: absolute, link: relative)
+        [v] imp highlight cmd as such
+      [v] error generation
+        [v] error generation should restore to prev stable state as part of last resort resolution
+      - user direct intervention (on click events)
+        - z index overlay cover touching area issue resolve
+  [v] resolved bug around maintaining cluster size invar
+  [v] resolved bug around unlink unconditionally touching activeLink collection
+  [v] adjusted search limits to give more effort to searches
+
+3.9 prep 3
+  - user direct intervention (on click events)
+    - z index overlay cover touching area issue resolve
   - normalizing display window and cell related dimension settings
+
 
 continue to [7]
 
