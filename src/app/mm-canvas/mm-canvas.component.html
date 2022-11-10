@@ -7,7 +7,7 @@
 
     <ng-container *ngFor="let node of activeNodes">
 
-      <ellipse [attr.cx]="node.getCx()" [attr.cy]="node.getCy()" rx="45" ry="32" [attr.stroke]="node.hasSpotLight()" style="fill:white;stroke-width:5" />
+      <ellipse [attr.cx]="node.getCx()" [attr.cy]="node.getCy()" rx="45" ry="32" [attr.stroke]="node.getSpotlight()" style="fill:white;stroke-width:5" />
       
       <text [attr.x]="node.getCx() - 60"[attr.y]="node.getCy() + 10" style="font-size: x-large">
         {{ node.getId() + ": " + node.getTxt() }}
@@ -16,7 +16,7 @@
 
     <ng-container *ngFor="let link of activeLinks">
 
-      <line [attr.x1]="link.getSt()[0]" [attr.y1]="link.getSt()[1]" [attr.x2]="link.getEd()[0]" [attr.y2]="link.getEd()[1]" style="stroke:rgb(255,0,0);stroke-width:5" />
+      <line [attr.x1]="link.getSt()[0]" [attr.y1]="link.getSt()[1]" [attr.x2]="link.getEd()[0]" [attr.y2]="link.getEd()[1]" [attr.stroke]="link.getSpotlight()" style="stroke-width:5" />
     </ng-container>
     
     <ng-container *ngFor="let blockChain of nodeOrigin">

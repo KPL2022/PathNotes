@@ -1,3 +1,14 @@
+export interface Highlightable {
+
+  lightOn: boolean;
+  lightColor: string;
+
+  hasSpotlight(): boolean;
+  spotlightOff(): void;
+  spotlightOn(color: string): void;
+  getSpotlight(): string;
+}
+
 export class MmBlock {
 
   private st: number;
@@ -74,7 +85,7 @@ export class MmBlock {
   }
 }
 
-export class MmNode {
+export class MmNode implements Highlightable {
 
   private cx: number;
   private cy: number;
@@ -88,7 +99,8 @@ export class MmNode {
 
   private clusterSize: number;
 
-  private spotLight: boolean;
+  public lightOn: boolean;
+  public lightColor: string;
 
   constructor(parentLink: MmLink | null, x: number, y: number, txt: string, id: string) {
 
@@ -104,17 +116,35 @@ export class MmNode {
 
     this.clusterSize = 1;
 
-    this.spotLight = false;
+    this.lightOn = false;
+    this.lightColor = "black";
   }
 
-  hasSpotLight(): string {
+  hasSpotlight(): boolean {
 
-    return this.spotLight ? "orange" : "black";
+    return this.lightOn;
   }
 
-  toggleSpotLight() {
+  spotlightOff() {
 
-    this.spotLight = !this.spotLight;
+    this.lightOn = false;
+  }
+
+  spotlightOn(color: string) {
+
+    this.lightColor = color;
+    this.lightOn = true;
+  }
+
+  getSpotlight(): string {
+
+    if (this.lightOn) {
+
+      return this.lightColor;
+    } else {
+
+      return "black";
+    }
   }
 
   getClusterSize() {
@@ -193,7 +223,7 @@ export class MmNode {
   }
 }
 
-export class MmLink {
+export class MmLink implements Highlightable {
 
   private parent: MmNode;
   private child: MmNode;
@@ -203,6 +233,9 @@ export class MmLink {
 
   private blks: MmBlock[] = [];
 
+  public lightOn: boolean;
+  public lightColor: string;
+
   constructor(child: MmNode, parent: MmNode, st: number[], ed: number[]) {
 
     this.parent = parent;
@@ -210,6 +243,36 @@ export class MmLink {
 
     this.st = st;
     this.ed = ed;
+
+    this.lightOn = false;
+    this.lightColor = "black";
+  }
+
+  hasSpotlight(): boolean {
+    
+    return this.lightOn;
+  }
+
+  spotlightOff(): void {
+    
+    this.lightOn = false;
+  }
+
+  spotlightOn(color: string): void {
+    
+    this.lightColor = color;
+    this.lightOn = true;
+  }
+
+  getSpotlight(): string {
+    
+    if (this.lightOn) {
+
+      return this.lightColor;
+    } else {
+
+      return "black";
+    }
   }
 
   getParent() {

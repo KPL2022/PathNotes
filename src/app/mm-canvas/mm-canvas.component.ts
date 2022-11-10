@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { platformBrowser } from '@angular/platform-browser';
 
-import { LinkPath, MmBlock, MmLink, MmNode } from '../data/DefMindmapStructs';
+import { Highlightable, LinkPath, MmBlock, MmLink, MmNode } from '../data/DefMindmapStructs';
 import { OperatorName, SystemCommand } from '../data/DefSysCmd'
 
 @Component({
@@ -22,14 +23,18 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   frameHeight = 750;
   colSize = Math.floor(0.03 * this.frameWidth);
   rowSize = Math.floor(0.05 * this.frameHeight);
-  defaultSearchDist = 2;
+  defaultSearchDist = 3;
   estimateLayerSize = 3;  // estimate 8 child nodes per layer for RBSS search depth recommendation
-  perLayerSearchLim = 2;
+  perLayerSearchLim = 3;
   minSearchDist = 1;
 
   createThreshold = 8;  // allow create when [0~9] lands < 8
   diceLim = 10;
   nary = 4;  // up to nary number of children for gen example
+
+  spotlightOff = "";
+  highLightColor = "orange";
+  errorColor = "red";
 
   constructor() { 
 
@@ -48,7 +53,7 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     if (this.hasCreatePermission()) {
 
       ret = this.generate(String(this.ids++));
-      console.log(ret);
+      // console.log(ret);
     }
 
     if (ret !== null && depth > 0) {
@@ -242,13 +247,63 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     return nd;
   }
 
-  highlight(id: string) {
+  highlight(id: string): MmNode {
 
-    var nd: MmNode = this.generate(id);
+    // case on finding relative reference symbol ':'
+    var foundRelativeRef: number = id.indexOf(':');
 
-    nd.toggleSpotLight();
+    if (foundRelativeRef !== -1) {
 
+      // resolve id as node -> link
+      var ids: string[] = id.split(':');
+
+      var nd: MmNode = this.generate(ids[0]);
+
+      // check parent link
+      var pLink = nd.getParentLink();
+
+      if (pLink !== null && pLink.getParent().getId() === ids[1]) {
+
+        // highlight this link
+        this.toggleSpotlight(pLink, this.highLightColor);
+
+        return nd;
+      }
+
+      // check children link
+      var children: MmLink[] = nd.getChildrenLinks();
+
+      for (var i = 0; i < children.length; i++) {
+
+        if (children[i].getChild().getId() === ids[1]) {
+
+          // highlight this link
+          this.toggleSpotlight(children[i], this.highLightColor);
+
+          return nd;
+        }
+      }
+    } else {
+
+      // process id only as node
+      var nd: MmNode = this.generate(id);
+
+      this.toggleSpotlight(nd, this.highLightColor);
+    }
+
+    // silent error treatment
     return nd;
+  }
+
+  toggleSpotlight(entity: Highlightable, color: string) {
+
+    if (!entity.hasSpotlight()) {
+
+      entity.spotlightOn(color);
+    } else {
+
+      entity.spotlightOff();
+    }
   }
 
   remove(id: string) {
@@ -273,6 +328,14 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
     if (nd !== undefined) {
 
+      // if parent, remove self from parent first
+      var pLink = nd.getParentLink();
+
+      if (pLink !== null) {
+
+        this.unlink(nd, pLink.getParent());
+      }
+
       // remove self from children
       var children: MmLink[] = nd.getChildrenLinks();
 
@@ -281,14 +344,6 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         var child = children[0].getChild();
 
         this.unlink(child, nd);
-      }
-
-      // if parent, remove self from parent
-      var pLink = nd.getParentLink();
-
-      if (pLink !== null) {
-
-        this.unlink(nd, pLink.getParent());
       }
 
       // free self space
@@ -328,8 +383,30 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
   unlink(child: MmNode, parent: MmNode) {
 
+    var pLink: MmLink | null = child.getParentLink();
+
+    if (pLink === null) {
+
+      return;
+    }
+
     // assert pLink !== null here
-    var pLink: MmLink = child.getParentLink() as MmLink;
+
+    var childClusterSize = child.getClusterSize();
+
+    // recurse upward parent cluster size update
+    while (pLink !== null) {
+
+      var pa = pLink.getParent();
+
+      // update parent
+      pa.setClusterSize(pa.getClusterSize() - childClusterSize);
+
+      // get parent
+      pLink = pa.getParentLink();
+    }
+
+    pLink = child.getParentLink() as MmLink;
 
     this.freeLink(pLink);
 
@@ -339,11 +416,12 @@ export class MmCanvasComponent implements OnInit, OnChanges {
   
     children.splice(children.indexOf(pLink), 1);
 
-    // update parent cluster size
-    parent.setClusterSize(parent.getClusterSize() - child.getClusterSize());
+    // remove link from active links col, if present
 
-    // remove link from active links col
-    this.activeLinks.splice(this.activeLinks.indexOf(pLink), 1);
+    if (this.activeLinks.indexOf(pLink) !== -1) {
+
+      this.activeLinks.splice(this.activeLinks.indexOf(pLink), 1);
+    }
   }
 
   merge(clusterA: MmNode, clusterB: MmNode) {
@@ -479,6 +557,9 @@ export class MmCanvasComponent implements OnInit, OnChanges {
         throw new Error("unable to alloc space for gen lk purpose");
       }
 
+      // add child cluster size to parent's
+      parent.setClusterSize(parent.getClusterSize() + child.getClusterSize());
+
       // add to active links col
       this.activeLinks.push(newLink);
     }
@@ -531,6 +612,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
     var pTopRow = Math.floor(parent.getCy() / rowSize) - 1;
     var pBotRow = pTopRow + 1;
 
+    var problemChilds: MmNode[] = [];
+
     for (var i = 0; i < children.length; i++) {
 
       var child: MmNode = children[i].getChild();
@@ -540,6 +623,9 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       var rangeList = this.shuffleOrder(this.range(this.minSearchDist, lim));
       var k = 0;
       var relocationComplete = false;
+
+      var childCenter = [child.getCx(), child.getCy()];
+      var childBlks = child.getBlks();
 
       while (k < rangeList.length && !relocationComplete) {
 
@@ -568,17 +654,35 @@ export class MmCanvasComponent implements OnInit, OnChanges {
 
       if (!relocationComplete) {
 
-        // this child exhausted 1->lim but couldnt relocate, give up
-        return false;
+        // this child exhausted 1->lim but couldnt relocate
+        
+        // restore to prev stable state
+        this.freeNode(child);
+        childBlks.forEach((blk: MmBlock) => blk.setOwner(child));
+        child.setBlks(childBlks);
+
+        child.setCx(childCenter[0]);
+        child.setCy(childCenter[1]);
+
+        problemChilds.push(child);
+
+        // highlight problem child
+        child.spotlightOn(this.errorColor);
+
+        // console.log(parent);
+        // console.log(child);
+        // console.log("^^^");
       }
     }
+
+    problemChilds.forEach((child: MmNode) => this.unlink(child, parent));
 
     return true;
   }
 
   computeLim(child: MmNode, parent: MmNode): number {
 
-    return Math.max(this.distBetween(child, parent), this.recommendLim(child));
+    return this.recommendLim(child);
   }
 
   distBetween(child: MmNode, parent: MmNode) {
@@ -696,12 +800,8 @@ export class MmCanvasComponent implements OnInit, OnChanges {
       child.setCx(cx);
       child.setCy(cy);
 
-      if (this.linkable(child, parent)) {
 
-        parent.setClusterSize(parent.getClusterSize() + child.getClusterSize());
-    
-        return true;
-      }
+      return this.linkable(child, parent);
     }
 
     return false;
