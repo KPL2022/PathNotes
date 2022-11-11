@@ -20,11 +20,11 @@ export class MmCanvasComponent implements OnInit {
   ids: number = 0;
   frameWidth = 1070;
   frameHeight = 750;
-  colSize = Math.floor(0.03 * this.frameWidth);
-  rowSize = Math.floor(0.05 * this.frameHeight);
-  defaultSearchDist = 3;
+  colSize = Math.floor(0.02 * this.frameWidth);
+  rowSize = Math.floor(0.03 * this.frameHeight);
+  defaultSearchDist = 6;
   estimateLayerSize = 3;  // estimate 8 child nodes per layer for RBSS search depth recommendation
-  perLayerSearchLim = 3;
+  perLayerSearchLim = 6;
   minSearchDist = 1;
 
   createThreshold = 90;  // allow create when [0~9] lands < 8
@@ -158,7 +158,11 @@ export class MmCanvasComponent implements OnInit {
 
           this.freeLink(pLink);
           this.blksMp.set(pLink, pLink.getBlks());
-          pLink.spotlightOn(this.highLightColor);
+          
+          if (!pLink.hasSpotlight()) {
+
+            pLink.spotlightOn(this.highLightColor);
+          }
         }
 
         var children: MmLink[] = node.getChildrenLinks();
@@ -167,7 +171,11 @@ export class MmCanvasComponent implements OnInit {
 
           this.freeLink(children[i]);
           this.blksMp.set(children[i], children[i].getBlks());
-          children[i].spotlightOn(this.highLightColor);
+          
+          if (!children[i].hasSpotlight()) {
+
+            children[i].spotlightOn(this.highLightColor);
+          }
         }
 
         this.dragOn = true;
@@ -246,18 +254,22 @@ export class MmCanvasComponent implements OnInit {
         this.spotlightNode.setCx(cx);
         this.spotlightNode.setCy(cy);
 
-        // if parent exists, parent link must be linkable, on fail, revert to original position
+        // if parent exists, best effort to place parent link
         var pLink: MmLink | null = this.spotlightNode.getParentLink();
 
         if (pLink !== null) {
 
           if (!this.linkable(this.spotlightNode, pLink.getParent())) {
 
-            this.freeNode(this.spotlightNode);
-            return this.revert();
-          }
+            pLink.spotlightOn(this.errorColor);
 
-          pLink.spotlightOff();
+            var ports = this.getPortLocations(this.spotlightNode, pLink.getParent());
+            pLink.setSt(ports[0][0], ports[0][1]);
+            pLink.setEd(ports[1][0], ports[1][1]);
+          } else {
+
+            pLink.spotlightOff();
+          }
         }
 
         this.spotlightNode.spotlightOff();
@@ -839,12 +851,16 @@ export class MmCanvasComponent implements OnInit {
 
     for (var i = 0; i < children.length; i++) {
 
-      var child: MmNode = children[i].getChild();
+      if (children[i].hasSpotlight()) {
 
-      if (child.hasSpotlight()) {
+        var ports = this.getPortLocations(children[i].getChild(), parent);
+        children[i].setSt(ports[0][0], ports[0][1]);
+        children[i].setEd(ports[1][0], ports[1][1]);
 
         continue;
       }
+
+      var child: MmNode = children[i].getChild();
 
       var lim = this.computeLim(child, parent);
 
@@ -853,6 +869,7 @@ export class MmCanvasComponent implements OnInit {
       var relocationComplete = false;
 
       var childCenter = [child.getCx(), child.getCy()];
+      var childBlks = child.getBlks();
 
       this.freeNode(child);
       this.freeLink(children[i]);
@@ -886,59 +903,25 @@ export class MmCanvasComponent implements OnInit {
 
         // this child exhausted 1->lim but couldnt relocate
         
-        // assert child and pLink are freed alr
-        var blks: MmBlock[] = child.getBlks();
+        // restore child and link to prev stable state
+        childBlks.forEach((blk: MmBlock) => blk.setOwner(child));
+        child.setBlks(childBlks);
 
-        for (var h = 0; h < blks.length; h++) {
-
-          if (!blks[h].isFree()) {
-
-            throw new Error("what");
-          }
-        }
-
-        // keep problem child and link off grid
-
-        // restore child centers only
+        // restore child centers
         child.setCx(childCenter[0]);
         child.setCy(childCenter[1]);
 
-        // adjust link to parent
-        var ports = this.getPortLocations(child, parent);
+        // keep link off grid
+        var ports = this.getPortLocations(child, children[i].getParent());
         children[i].setSt(ports[0][0], ports[0][1]);
         children[i].setEd(ports[1][0], ports[1][1]);
 
-        // highlight problem child and link and parent
-        child.spotlightOn(this.errorColor);
+        // flag link
         children[i].spotlightOn(this.errorColor);
-        parent.spotlightOn(this.errorColorParent);
-
-        this.propagateError(child, this.errorColor);
       }
     }
 
     return true;
-  }
-
-  propagateError(rt: MmNode, errColor: string) {
-
-    if (rt.getChildrenLinks().length > 0) {
-
-      var children: MmLink[] = rt.getChildrenLinks();
-
-      for (var i = 0; i < children.length; i++) {
-
-        var child: MmNode = children[i].getChild();
-
-        this.freeLink(children[i]);
-        children[i].spotlightOn(errColor);
-
-        this.freeNode(child);
-        child.spotlightOn(errColor);
-
-        this.propagateError(child, errColor);
-      }
-    }
   }
 
   computeLim(child: MmNode, parent: MmNode): number {

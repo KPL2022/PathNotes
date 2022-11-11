@@ -154,16 +154,25 @@ pre generative order update items:
         [v] recursively mark all des of child for correction
   
 3.10 prep 4
-- error handling continued: resolution
-    [v] user intervention mechanism implement
-      [v] grab, trace, drop implementation review
-    - presentation should provide info about problem childs
-    - review error resolution workflow
+  [v] error handling continued: resolution
+      [v] user intervention mechanism implement
+        [v] grab, trace, drop implementation review
+        [v] parent links shoud not be any diff from child links
+        [v] red light needs to stay on til link is situated
+  - imp loose link tracing to get around the port crowdedness issue
+  - refactor mm-canvas code
   - normalizing display window and cell related dimension settings
     - window resizing adapt
-  - direct user intervention export interfaces prepare
-  - refactor mindmap module components
-    - remove mindmap wrapper
+  - display touchup
+    - presentation should provide info about problem childs
+      - show grid on error handle workflow init?
+    - review error resolution workflow
+      - show grid button
+      - tl err flag just for visuals?
+  [v] direct user intervention export interfaces prepare
+  [v] reflect on bugs
+    - generateExample repeated call induced error incomplete handling error
+    - a lot of space alloc error are actually cuz the atomic blocks are too big, for the smallish bubbles, exit ports get crowded quickly and raise flags
 
 continue to [7]
 
@@ -199,3 +208,5 @@ extras
   - live pulling from github, and init mindmap from specific md files?
   - lvl 3 response function -> merge implement
   - rework RBSS to remove boolean return, eaiser to ask for user correction than otherwise
+  - refactor mindmap module components
+    - remove mindmap wrapper
