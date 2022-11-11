@@ -18,7 +18,8 @@ import { SpotlightDirective } from './spotlight.directive';
 import { HttpClientModule } from '@angular/common/http';
 import { MmCanvasComponent } from './mm-canvas/mm-canvas.component';
 import { MmControlsComponent } from './mm-controls/mm-controls.component';
-import { MmControlsSideComponent } from './mm-controls-side/mm-controls-side.component'
+import { MmControlsSideComponent } from './mm-controls-side/mm-controls-side.component';
+import { MmControlsErrFlagComponent } from './mm-controls-err-flag/mm-controls-err-flag.component'
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import { MmControlsSideComponent } from './mm-controls-side/mm-controls-side.com
     SpotlightDirective,
     MmCanvasComponent,
     MmControlsComponent,
-    MmControlsSideComponent
+    MmControlsSideComponent,
+    MmControlsErrFlagComponent
   ],
   imports: [
     BrowserModule,

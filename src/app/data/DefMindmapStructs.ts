@@ -1,3 +1,11 @@
+export interface Stateful {
+
+  blks: MmBlock[];
+
+  getBlks(): MmBlock[];
+  setBlks(newBlks: MmBlock[]): void;
+}
+
 export interface Highlightable {
 
   lightOn: boolean;
@@ -16,7 +24,7 @@ export class MmBlock {
   private dispHeight: number;
   private rowId: number;
   private blkId: number;
-  private owner: MmNode | MmLink | null;
+  private owner: Stateful | null;
 
   constructor(st: number, ed: number, dispHeight: number, rowId: number, blkId: number) {
 
@@ -54,7 +62,7 @@ export class MmBlock {
     return this.owner;
   }
 
-  setOwner(newOwner: MmNode | MmLink) {
+  setOwner(newOwner: Stateful) {
 
     this.owner = newOwner;
   }
@@ -62,6 +70,7 @@ export class MmBlock {
   free() {
 
     this.owner = null;
+    this.isFree();
   }
 
   getStart() {
@@ -85,7 +94,7 @@ export class MmBlock {
   }
 }
 
-export class MmNode implements Highlightable {
+export class MmNode implements Highlightable, Stateful {
 
   private cx: number;
   private cy: number;
@@ -95,9 +104,9 @@ export class MmNode implements Highlightable {
   private parentLink: MmLink | null;
   private childrenLinks: MmLink[];
 
-  private blks: MmBlock[];
-
   private clusterSize: number;
+
+  public blks: MmBlock[];
 
   public lightOn: boolean;
   public lightColor: string;
@@ -223,7 +232,7 @@ export class MmNode implements Highlightable {
   }
 }
 
-export class MmLink implements Highlightable {
+export class MmLink implements Highlightable, Stateful {
 
   private parent: MmNode;
   private child: MmNode;
@@ -231,7 +240,7 @@ export class MmLink implements Highlightable {
   private st: number[];
   private ed: number[];
 
-  private blks: MmBlock[] = [];
+  public blks: MmBlock[] = [];
 
   public lightOn: boolean;
   public lightColor: string;

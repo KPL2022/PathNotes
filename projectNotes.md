@@ -288,4 +288,18 @@ https://computergraphics.stackexchange.com/questions/5302/how-can-i-verify-if-a-
 
 117. http://svg-whiz.com/svg/DragAndDrop.svg
 
-118. 
+118. https://stackoverflow.com/questions/57933706/how-to-get-id-from-document-elementfrompoint-with-same-x-coordinates-in-javascri
+
+119. https://stackoverflow.com/questions/44915399/mousemove-event-blocked-by-occluding-svg-elements
+
+120. https://www.w3schools.com/jsref/obj_mouseevent.asp
+
+121. https://stackoverflow.com/questions/17081244/is-it-possible-to-set-custom-attributes-of-svg-objects-as-number-and-not-as-stri
+
+122. https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute
+
+123. https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/pointer-events
+
+124. https://stackoverflow.com/questions/5429827/how-can-i-prevent-text-element-selection-with-cursor-drag
+
+125. 

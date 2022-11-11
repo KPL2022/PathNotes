@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ResolveStart } from '@angular/router';
 
-import { Highlightable, LinkPath, MmBlock, MmLink, MmNode } from '../data/DefMindmapStructs';
+import { Highlightable, LinkPath, MmBlock, MmLink, MmNode, Stateful } from '../data/DefMindmapStructs';
 import { OperatorName, SystemCommand } from '../data/DefSysCmd'
 import { MindmapService } from '../mindmap.service';
 
@@ -26,18 +27,21 @@ export class MmCanvasComponent implements OnInit {
   perLayerSearchLim = 3;
   minSearchDist = 1;
 
-  createThreshold = 8;  // allow create when [0~9] lands < 8
-  diceLim = 10;
+  createThreshold = 90;  // allow create when [0~9] lands < 8
+  diceLim = 100;
   nary = 4;  // up to nary number of children for gen example
 
   spotlightOff = "";
   highLightColor = "orange";
-  errorColor = "red";
+  errorColor = "rgba(255, 0, 0, 0.6)";
+  errorColorParent = "rgb(150, 0, 0)";
 
   pregrabCenter: number[] = [];
-  pregrabBlks: MmBlock[] = [];
+  blksMp!: Map<Stateful, MmBlock[]>;
   spotlightNode!: MmNode;
   dragOn: boolean = false;
+
+  showFlag: boolean = true;
 
   constructor(private mmCore: MindmapService) { 
 
@@ -117,6 +121,11 @@ export class MmCanvasComponent implements OnInit {
 
   }
 
+  resolveError() {
+
+    
+  }
+
   grab(ev: MouseEvent) {
 
     var tmp: Element | null = document.elementFromPoint(ev.clientX, ev.clientY);
@@ -129,15 +138,37 @@ export class MmCanvasComponent implements OnInit {
 
       if (node !== undefined) {
 
-        this.toggleSpotlight(node, this.highLightColor);
-        node.setTxt("haha");
+        // stop text highlighting with drag
+        ev.preventDefault();
 
+        // init drag related vars
         this.pregrabCenter = [node.getCx(), node.getCy()];
-        this.pregrabBlks = node.getBlks();
+        
+        this.blksMp = new Map();
+        this.blksMp.set(node, node.getBlks());
 
         this.spotlightNode = node;
         this.freeNode(this.spotlightNode);
-        this.freeLink(this.spotlightNode.getParentLink() as MmLink);
+        
+        node.spotlightOn(this.highLightColor);
+
+        var pLink = node.getParentLink();
+
+        if (pLink !== null) {
+
+          this.freeLink(pLink);
+          this.blksMp.set(pLink, pLink.getBlks());
+          pLink.spotlightOn(this.highLightColor);
+        }
+
+        var children: MmLink[] = node.getChildrenLinks();
+
+        for (var i = 0; i < children.length; i++) {
+
+          this.freeLink(children[i]);
+          this.blksMp.set(children[i], children[i].getBlks());
+          children[i].spotlightOn(this.highLightColor);
+        }
 
         this.dragOn = true;
       }
@@ -165,43 +196,145 @@ export class MmCanvasComponent implements OnInit {
         var ports = this.getPortLocations(this.spotlightNode, pLink.getParent());
 
         pLink.setSt(ports[0][0], ports[0][1]);
+        pLink.setEd(ports[1][0], ports[1][1]);
       }
 
       // children
+      var children: MmLink[] = this.spotlightNode.getChildrenLinks();
+
+      for (var i = 0; i < children.length; i++) {
+
+        var ports = this.getPortLocations(children[i].getChild(), this.spotlightNode);
+
+        children[i].setSt(ports[0][0], ports[0][1]);
+        children[i].setEd(ports[1][0], ports[1][1]);
+      }
     }
   }
 
-  drop(ev: MouseEvent) {
+  drop(ev: MouseEvent): void {
 
-    this.dragOn = false;
+    if (this.dragOn) {
 
-    var a = 45;
-    var b = 32;
+      this.dragOn = false;
 
-    var leftEdge = this.spotlightNode.getCx() - a;
-    var excess = leftEdge % this.colSize;
+      var a = 45;
+      var b = 32;
 
-    this.spotlightNode.setCx(this.spotlightNode.getCx() - excess + 5);
+      var leftEdge = this.spotlightNode.getCx() - a;
+      var excess = leftEdge % this.colSize;
 
-    var topEdge = this.spotlightNode.getCy() - b;
+      this.spotlightNode.setCx(this.spotlightNode.getCx() - excess + 5);
 
-    this.spotlightNode.setCy(this.spotlightNode.getCy() - topEdge % this.rowSize + 5);
+      var topEdge = this.spotlightNode.getCy() - b;
 
-    // from cx,cy derive tl st block, then attempt migrate, if fail, revert to pregrab state
-    var dims = [3, 2];
+      this.spotlightNode.setCy(this.spotlightNode.getCy() - topEdge % this.rowSize + 5);
 
-    var stBlkLoc = [Math.floor(this.spotlightNode.getCx() / this.colSize) - 1, Math.floor(this.spotlightNode.getCy() / this.rowSize) - 1];
-  
-    if (!this.migrate(this.nodeOrigin[stBlkLoc[1]][stBlkLoc[0]], this.spotlightNode, (this.spotlightNode.getParentLink() as MmLink).getParent(), dims)) {
+      // from cx,cy derive tl st block, then attempt migrate, if fail, revert to pregrab state
+      var dims = [3, 2];
 
-      // revert
-      this.freeNode(this.spotlightNode);
-      this.pregrabBlks.forEach((blk: MmBlock) => blk.setOwner(this.spotlightNode));
-      this.spotlightNode.setBlks(this.pregrabBlks);
+      var stBlkLoc = [Math.floor(this.spotlightNode.getCx() / this.colSize) - 1, Math.floor(this.spotlightNode.getCy() / this.rowSize) - 1];
+      var st: MmBlock = this.nodeOrigin[stBlkLoc[1]][stBlkLoc[0]];
 
-      this.spotlightNode.setCx(this.pregrabCenter[0]);
-      this.spotlightNode.setCy(this.pregrabCenter[1]);
+      // first check for containable
+      if (this.containable(st, this.spotlightNode, dims[0], dims[1])) {
+
+        // move child to containable location
+        var cx = st.getStart() + Math.floor((st.getEnd() - st.getStart()) * dims[0] / 2);
+        var cy = st.getRowId() * st.getDispHeight() + Math.floor(st.getDispHeight() * dims[1] / 2);
+
+        this.spotlightNode.setCx(cx);
+        this.spotlightNode.setCy(cy);
+
+        // if parent exists, parent link must be linkable, on fail, revert to original position
+        var pLink: MmLink | null = this.spotlightNode.getParentLink();
+
+        if (pLink !== null) {
+
+          if (!this.linkable(this.spotlightNode, pLink.getParent())) {
+
+            this.freeNode(this.spotlightNode);
+            return this.revert();
+          }
+
+          pLink.spotlightOff();
+        }
+
+        this.spotlightNode.spotlightOff();
+
+        // try best effort to place children links, on fail, only highlight link with error
+        var children: MmLink[] = this.spotlightNode.getChildrenLinks();
+
+        for (var i = 0; i < children.length; i++) {
+
+          if (!this.linkable(children[i].getChild(), this.spotlightNode)) {
+
+            // flag child link only
+            children[i].spotlightOn(this.errorColor);
+
+            var ports = this.getPortLocations(children[i].getChild(), this.spotlightNode);
+            children[i].setSt(ports[0][0], ports[0][1]);
+            children[i].setEd(ports[1][0], ports[1][1]);
+          } else {
+
+            children[i].spotlightOff();
+          }
+        }
+      } else {
+
+        // revert
+        return this.revert();
+      }
     }
+
+    return;
+  }
+
+  revert(): void {
+
+    // revert spotlight node centers
+    this.spotlightNode.setCx(this.pregrabCenter[0]);
+    this.spotlightNode.setCy(this.pregrabCenter[1]);
+
+    // revert spotlight node blks
+    this.restoreStateful(this.spotlightNode);
+
+    this.spotlightNode.spotlightOff();
+
+    // revert parent link
+    var pLink: MmLink | null = this.spotlightNode.getParentLink();
+
+    if (pLink !== null) {
+
+      this.restoreStateful(pLink);
+
+      var ports = this.getPortLocations(this.spotlightNode, pLink.getParent());
+      pLink.setSt(ports[0][0], ports[0][1]);
+      pLink.setEd(ports[1][0], ports[1][1]);
+
+      pLink.spotlightOff();
+    }
+
+    var children: MmLink[] = this.spotlightNode.getChildrenLinks();
+
+    for (var i = 0; i < children.length; i++) {
+
+      this.restoreStateful(children[i]);
+
+      var ports = this.getPortLocations(children[i].getChild(), this.spotlightNode);
+      children[i].setSt(ports[0][0], ports[0][1]);
+      children[i].setEd(ports[1][0], ports[1][1]);
+
+      children[i].spotlightOff();
+    }
+  }
+
+  restoreStateful(entity: Stateful) {
+
+    var enBlks: MmBlock[] = this.blksMp.get(entity) as MmBlock[];
+
+    enBlks.forEach((blk: MmBlock) => blk.setOwner(entity));
+    entity.setBlks(enBlks);
   }
 
   parse(userInput: string) {
@@ -704,11 +837,14 @@ export class MmCanvasComponent implements OnInit {
     var pTopRow = Math.floor(parent.getCy() / rowSize) - 1;
     var pBotRow = pTopRow + 1;
 
-    var problemChilds: MmNode[] = [];
-
     for (var i = 0; i < children.length; i++) {
 
       var child: MmNode = children[i].getChild();
+
+      if (child.hasSpotlight()) {
+
+        continue;
+      }
 
       var lim = this.computeLim(child, parent);
 
@@ -717,7 +853,9 @@ export class MmCanvasComponent implements OnInit {
       var relocationComplete = false;
 
       var childCenter = [child.getCx(), child.getCy()];
-      var childBlks = child.getBlks();
+
+      this.freeNode(child);
+      this.freeLink(children[i]);
 
       while (k < rangeList.length && !relocationComplete) {
 
@@ -748,28 +886,59 @@ export class MmCanvasComponent implements OnInit {
 
         // this child exhausted 1->lim but couldnt relocate
         
-        // restore to prev stable state
-        this.freeNode(child);
-        childBlks.forEach((blk: MmBlock) => blk.setOwner(child));
-        child.setBlks(childBlks);
+        // assert child and pLink are freed alr
+        var blks: MmBlock[] = child.getBlks();
 
+        for (var h = 0; h < blks.length; h++) {
+
+          if (!blks[h].isFree()) {
+
+            throw new Error("what");
+          }
+        }
+
+        // keep problem child and link off grid
+
+        // restore child centers only
         child.setCx(childCenter[0]);
         child.setCy(childCenter[1]);
 
-        problemChilds.push(child);
+        // adjust link to parent
+        var ports = this.getPortLocations(child, parent);
+        children[i].setSt(ports[0][0], ports[0][1]);
+        children[i].setEd(ports[1][0], ports[1][1]);
 
-        // highlight problem child
+        // highlight problem child and link and parent
         child.spotlightOn(this.errorColor);
+        children[i].spotlightOn(this.errorColor);
+        parent.spotlightOn(this.errorColorParent);
 
-        // console.log(parent);
-        // console.log(child);
-        // console.log("^^^");
+        this.propagateError(child, this.errorColor);
       }
     }
 
-    problemChilds.forEach((child: MmNode) => this.unlink(child, parent));
-
     return true;
+  }
+
+  propagateError(rt: MmNode, errColor: string) {
+
+    if (rt.getChildrenLinks().length > 0) {
+
+      var children: MmLink[] = rt.getChildrenLinks();
+
+      for (var i = 0; i < children.length; i++) {
+
+        var child: MmNode = children[i].getChild();
+
+        this.freeLink(children[i]);
+        children[i].spotlightOn(errColor);
+
+        this.freeNode(child);
+        child.spotlightOn(errColor);
+
+        this.propagateError(child, errColor);
+      }
+    }
   }
 
   computeLim(child: MmNode, parent: MmNode): number {
@@ -881,6 +1050,8 @@ export class MmCanvasComponent implements OnInit {
     return cands;
   }
 
+  // assert child and pLink are off the grid pre migrate
+  // migrate will only change alloc state if migratable
   migrate(st: MmBlock, child: MmNode, parent: MmNode, dims: number[]): boolean {
 
     // first check for containable
@@ -893,8 +1064,13 @@ export class MmCanvasComponent implements OnInit {
       child.setCx(cx);
       child.setCy(cy);
 
+      if (!this.linkable(child, parent)) {
 
-      return this.linkable(child, parent);
+        this.freeNode(child);
+      } else {
+
+        return true;
+      }
     }
 
     return false;
@@ -1015,8 +1191,6 @@ export class MmCanvasComponent implements OnInit {
 
     // path is clear, finish up allocing link
     var link: MmLink = child.getParentLink() as MmLink;
-      
-    this.freeLink(link);
 
     link.setBlks(blks);
     blks.forEach((blk: MmBlock) => blk.setOwner(link));
@@ -1111,13 +1285,23 @@ export class MmCanvasComponent implements OnInit {
 
   freeLink(link: MmLink) {
 
-    link.getBlks().forEach((blk: MmBlock) => {blk.free();});
+    var blks: MmBlock[] = link.getBlks();
+
+    for (var i = 0; i < blks.length; i++) {
+
+      blks[i].free();
+    }
   }
 
   // TODO: more responsible free imp
   freeNode(node: MmNode) {
 
-    node.getBlks().forEach((blk: MmBlock) => blk.free());
+    var blks: MmBlock[] = node.getBlks();
+
+    for (var i = 0; i < blks.length; i++) {
+
+      blks[i].free();
+    }
   }
 
   shuffleOrder(original: any[]) {

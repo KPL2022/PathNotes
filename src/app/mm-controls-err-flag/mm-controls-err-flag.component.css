@@ -1,0 +1,29 @@
+:host {
+
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+
+  z-index: 2;
+}
+
+.err-frame {
+
+  width: 35%;
+  height: 100%;
+
+  background-color: white;
+
+  border: 2px solid black;
+  border-radius: 10px;
+
+  background-image: url("/assets/flaticon/ex_mark_red.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.err-frame:hover {
+
+  background-color: rgb(249, 52, 52);
+
+  background-image: url("/assets/flaticon/ex_mark_white.png");
+}

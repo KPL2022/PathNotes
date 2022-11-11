@@ -38,3 +38,5 @@
 <app-mm-controls (materialize)="parse($event)"></app-mm-controls>
 
 <app-mm-controls-side (menuEvent)="handleMenuEvent($event)"></app-mm-controls-side>
+
+<app-mm-controls-err-flag [showFlag]="showFlag" (initErrHandlingEvent)="resolveError()"></app-mm-controls-err-flag>

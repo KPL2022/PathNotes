@@ -126,19 +126,41 @@ pre generative order update items:
   [v] resolved bug around unlink unconditionally touching activeLink collection
   [v] adjusted search limits to give more effort to searches
 
-3.9 prep 3
-  - user direct intervention (mouse events)
+[v] 3.9 prep 3
+  [v] user direct intervention test imp (mouse events)
     [v] z index overlay cover touching area issue resolve
-    - user relocate
-      - mousedown -> grab
+    [v] user relocate
+      [v] mousedown -> grab
         - store init location data
-      - mousemove -> trace
+      [v] mousemove -> trace
         - liberate svg element from grid confines
-      - mouseup -> drop
+      [v] mouseup -> drop
         - check if location can host node
           - if so, relocate and adjust links
           - else, return to stored prev stable state
+  [v] RBSS rework
+    [v] rework RBSS with more reasonable state transition in between migrate attempts
+      - now free child node and parent link b4 migrate attempts
+        [v] more room for migrate this way  
+          - if migratable -> next stable state alloc
+          - else no alloc changes made to child or parent link
+    [v] rework RBSS error handling: presentation
+      [v] no longer removes link, instead now:
+        [v] keep problem child/link off the grid
+        [v] restore child original location
+        [v] change link for parent side
+        [v] highlights link and problem c->p pair with error color
+          - parent has darker red
+        [v] recursively mark all des of child for correction
+  
+3.10 prep 4
+- error handling continued: resolution
+    [v] user intervention mechanism implement
+      [v] grab, trace, drop implementation review
+    - presentation should provide info about problem childs
+    - review error resolution workflow
   - normalizing display window and cell related dimension settings
+    - window resizing adapt
   - direct user intervention export interfaces prepare
   - refactor mindmap module components
     - remove mindmap wrapper
@@ -176,3 +198,4 @@ extras
   - try to in best effort manner preserve user bubble orientation when re-allocing for more reasonable space usage
   - live pulling from github, and init mindmap from specific md files?
   - lvl 3 response function -> merge implement
+  - rework RBSS to remove boolean return, eaiser to ask for user correction than otherwise
