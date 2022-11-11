@@ -22,14 +22,14 @@ export class MmCanvasComponent implements OnInit {
   frameHeight = 750;
   colSize = Math.floor(0.02 * this.frameWidth);
   rowSize = Math.floor(0.03 * this.frameHeight);
-  defaultSearchDist = 6;
+  defaultSearchDist = 8;
   estimateLayerSize = 3;  // estimate 8 child nodes per layer for RBSS search depth recommendation
-  perLayerSearchLim = 6;
-  minSearchDist = 1;
+  perLayerSearchLim = 3;
+  minSearchDist = 3;
 
   createThreshold = 90;  // allow create when [0~9] lands < 8
   diceLim = 100;
-  nary = 4;  // up to nary number of children for gen example
+  nary = 5;  // up to nary number of children for gen example
 
   spotlightOff = "";
   highLightColor = "orange";
@@ -42,6 +42,8 @@ export class MmCanvasComponent implements OnInit {
   dragOn: boolean = false;
 
   showFlag: boolean = true;
+
+  borderRadius: number = 1;
 
   constructor(private mmCore: MindmapService) { 
 
@@ -1175,6 +1177,10 @@ export class MmCanvasComponent implements OnInit {
     // path is clear, finish up allocing link
     var link: MmLink = child.getParentLink() as MmLink;
 
+    // trim off beginning and ends to make more port space
+    this.trim(child, blks, 0, 0);
+    this.trim(parent, blks, blks.length - 1, -1);
+
     link.setBlks(blks);
     blks.forEach((blk: MmBlock) => blk.setOwner(link));
 
@@ -1182,6 +1188,66 @@ export class MmCanvasComponent implements OnInit {
     link.setEd(ed[0], ed[1]);
 
     return true;
+  }
+
+  trim(node: MmNode, blks: MmBlock[], st: number, inc: number) {
+
+    // compute 1 distance container outside node, elim any blk element inside it
+
+    var nodeBlks: MmBlock[] = node.getBlks();
+
+    var minRow = nodeBlks[0].getRowId();
+    var maxRow = minRow;
+    var minCol = nodeBlks[0].getBlkId();
+    var maxCol = minCol;
+
+    for (var i = 1; i < nodeBlks.length; i++) {
+
+      var nxtRow = nodeBlks[i].getRowId();
+      var nxtCol = nodeBlks[i].getBlkId();
+
+      if (nxtRow < minRow) {
+
+        minRow = nxtRow;
+      }
+
+      if (nxtRow > maxRow) {
+
+        maxRow = nxtRow;
+      }
+
+      if (nxtCol < minCol) {
+
+        minCol = nxtCol;
+      }
+
+      if (nxtCol > maxCol) {
+
+        maxCol = nxtCol;
+      }
+    }
+
+    // add 1 to range
+    minRow = minRow === 0 ? minRow : minRow - this.borderRadius;
+    maxRow = maxRow === this.nodeOrigin.length - 1 ? maxRow : maxRow + this.borderRadius;
+    minCol = minCol === 0 ? minCol : minCol - this.borderRadius;
+    maxCol = maxCol === this.nodeOrigin[0].length - 1 ? maxCol : maxCol + this.borderRadius;
+
+    var ranges = [minRow, maxRow, minCol, maxCol];
+
+    while (blks.length > 0 && this.inRange(blks[st], ranges)) {
+
+      blks.splice(st, 1);
+      st = st + inc;
+    }
+  }
+
+  inRange(blk: MmBlock, ranges: number[]): boolean {
+
+    var row = blk.getRowId();
+    var col = blk.getBlkId();
+
+    return row >= ranges[0] && row <= ranges[1] && col >= ranges[2] && col <= ranges[3];
   }
 
   getPortLocations(from: MmNode, to: MmNode): number[][] {

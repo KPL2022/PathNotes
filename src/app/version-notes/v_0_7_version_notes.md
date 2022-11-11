@@ -153,26 +153,40 @@ pre generative order update items:
           - parent has darker red
         [v] recursively mark all des of child for correction
   
-3.10 prep 4
-  [v] error handling continued: resolution
-      [v] user intervention mechanism implement
-        [v] grab, trace, drop implementation review
-        [v] parent links shoud not be any diff from child links
-        [v] red light needs to stay on til link is situated
-  - imp loose link tracing to get around the port crowdedness issue
-  - refactor mm-canvas code
-  - normalizing display window and cell related dimension settings
-    - window resizing adapt
-  - display touchup
-    - presentation should provide info about problem childs
-      - show grid on error handle workflow init?
-    - review error resolution workflow
-      - show grid button
-      - tl err flag just for visuals?
-  [v] direct user intervention export interfaces prepare
-  [v] reflect on bugs
-    - generateExample repeated call induced error incomplete handling error
-    - a lot of space alloc error are actually cuz the atomic blocks are too big, for the smallish bubbles, exit ports get crowded quickly and raise flags
+  [v] 3.10 prep 4
+    [v] error handling continued: resolution
+        [v] user intervention mechanism implement
+          [v] grab, trace, drop implementation review
+          [v] parent links shoud not be any diff from child links
+          [v] red light needs to stay on til link is situated
+    [v] imp loose link tracing to get around the port crowdedness issue
+      - experimented with border radius parameter for better port availability
+        - but comes at cost of looser definition of space occupation
+          - cross links, etc
+    [v] direct user intervention export interfaces prepare
+    [v] reflect on bugs
+      - generateExample repeated call induced error incomplete handling error
+      - a lot of space alloc error are actually cuz the atomic blocks are too big, for the smallish bubbles, exit ports get crowded quickly and raise flags
+    [v] some thoughts
+      - generateExample() gives really big mindmaps, use cases?
+        - probs important file if mm that big
+          - auto blow out -> 1 time loader function
+            - then mindmap enters cycle of context switch persistent <-> disp
+            - ok to give messy first time blow outs
+      - file conversion: any -> mindmap?
+        - any could be formatted .txt
+      - context switch seems to be the go to experiment option for persistency formatting
+
+  3.11 prep 5
+    - normalizing display window and cell related dimension settings
+      - window resizing adapt
+      - scale entity to bounds of container
+    - display touchup
+      - presentation should provide info about problem childs
+        - show grid on error handle workflow init?
+      - review error resolution workflow
+        - show grid button
+        - tl err flag just for visuals?
 
 continue to [7]
 
@@ -210,3 +224,8 @@ extras
   - rework RBSS to remove boolean return, eaiser to ask for user correction than otherwise
   - refactor mindmap module components
     - remove mindmap wrapper
+  - blow out still leaves things to be desired 
+    - need better heuristic for estimating space availability in regions
+      - and for injecting preference into entity space alloc
+  - refactor mm-canvas code
+  - performance review, loading a lot of heavy computations onto the UI thread...
