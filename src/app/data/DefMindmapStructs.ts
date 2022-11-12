@@ -1,3 +1,5 @@
+import { NonNullableFormBuilder } from "@angular/forms";
+
 export interface Stateful {
 
   blks: MmBlock[];
@@ -96,6 +98,9 @@ export class MmBlock {
 
 export class MmNode implements Highlightable, Stateful {
 
+  private a: number;
+  private b: number;
+
   private cx: number;
   private cy: number;
   private txt: string;
@@ -111,7 +116,10 @@ export class MmNode implements Highlightable, Stateful {
   public lightOn: boolean;
   public lightColor: string;
 
-  constructor(parentLink: MmLink | null, x: number, y: number, txt: string, id: string) {
+  constructor(parentLink: MmLink | null, x: number, y: number, txt: string, id: string, a: number, b: number) {
+
+    this.a = a;
+    this.b = b;
 
     this.parentLink = parentLink;
 
@@ -127,6 +135,16 @@ export class MmNode implements Highlightable, Stateful {
 
     this.lightOn = false;
     this.lightColor = "black";
+  }
+
+  getRadiusX() {
+
+    return this.a;
+  }
+
+  getRadiusY() {
+
+    return this.b;
   }
 
   hasSpotlight(): boolean {

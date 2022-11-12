@@ -8,8 +8,9 @@
 
 .err-frame {
 
-  width: 35%;
-  height: 100%;
+  /* hmm...how to keep this square more elegantly? */
+  width: 5vh;
+  height: 5vh;
 
   background-color: white;
 

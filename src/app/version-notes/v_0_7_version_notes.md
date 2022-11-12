@@ -177,16 +177,17 @@ pre generative order update items:
         - any could be formatted .txt
       - context switch seems to be the go to experiment option for persistency formatting
 
-  3.11 prep 5
-    - normalizing display window and cell related dimension settings
-      - window resizing adapt
-      - scale entity to bounds of container
-    - display touchup
+ [v] 3.11 prep 5
+    [v] normalizing display window and cell related dimension settings
+      [v] normalize display parameters
+        [v] static entity sizing def propagate
+        [v] change entity sizing def to give drawing sizing prio
+          [v] scale container to size of drawn entity
+    [v] display touchup
       - presentation should provide info about problem childs
         - show grid on error handle workflow init?
-      - review error resolution workflow
-        - show grid button
-        - tl err flag just for visuals?
+      [v] review error resolution workflow
+        [v] show grid button
 
 continue to [7]
 
@@ -204,6 +205,8 @@ post processing & misc items:
 
 7. how should mindmaps be represented in persistent storage?
   - initial experience with from persistent storage context switch implementation
+    - 
+  - window resizing adapt
 
 *******************this concludes Path Notes v0.7 functional mindmap module
 
@@ -229,3 +232,10 @@ extras
       - and for injecting preference into entity space alloc
   - refactor mm-canvas code
   - performance review, loading a lot of heavy computations onto the UI thread...
+  - keep state on red links, show error flag on error collection non empty
+  - record notes: had foresight to contain use of global vars for replacement later, glad
+  - tl err flag just for visuals?
+  - other touchups
+    - imp freeable interface to merge free method calls
+    - portlocation calls can be simplified into wrapper
+  - angular view child, input, output, learn more about

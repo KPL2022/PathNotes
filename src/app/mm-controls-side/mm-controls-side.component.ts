@@ -15,4 +15,9 @@ export class MmControlsSideComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  showGrid() {
+
+    this.menuEvent.emit("show grid");
+  }
+
 }

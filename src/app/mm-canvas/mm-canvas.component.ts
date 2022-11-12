@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { ResolveStart } from '@angular/router';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 
 import { Highlightable, LinkPath, MmBlock, MmLink, MmNode, Stateful } from '../data/DefMindmapStructs';
 import { OperatorName, SystemCommand } from '../data/DefSysCmd'
@@ -10,7 +9,9 @@ import { MindmapService } from '../mindmap.service';
   templateUrl: './mm-canvas.component.html',
   styleUrls: ['./mm-canvas.component.css']
 })
-export class MmCanvasComponent implements OnInit {
+export class MmCanvasComponent implements AfterViewInit {
+
+  @ViewChild('gridBkgd') gridFrame!: ElementRef;
 
   activeNodes: MmNode[] = [];
   activeLinks: MmLink[] = [];
@@ -18,18 +19,29 @@ export class MmCanvasComponent implements OnInit {
   testPoints: number[][] = [];
 
   ids: number = 0;
-  frameWidth = 1070;
-  frameHeight = 750;
-  colSize = Math.floor(0.02 * this.frameWidth);
-  rowSize = Math.floor(0.03 * this.frameHeight);
+  colSize!: number;
+  rowSize!: number;
+
+  // on variable entity sizing, these probs will have to move into entity def
   defaultSearchDist = 8;
-  estimateLayerSize = 3;  // estimate 8 child nodes per layer for RBSS search depth recommendation
   perLayerSearchLim = 3;
-  minSearchDist = 3;
+
+  // assert entity as ellipse with mj axis a, min axis b measured in units of pixels
+  a = 67;
+  b = 48; 
+  entityWidth!: number;
+  entityHeight!: number;
+
+  entityRadius: number = 2;
+  borderRadius: number = 1;
+  minSearchDist = this.borderRadius + this.entityRadius;
+  
+  // estimate 3 child nodes per layer for RBSS search depth recommendation
+  estimateLayerSize = 3; 
 
   createThreshold = 90;  // allow create when [0~9] lands < 8
   diceLim = 100;
-  nary = 5;  // up to nary number of children for gen example
+  nary = 4;  // up to nary number of children for gen example
 
   spotlightOff = "";
   highLightColor = "orange";
@@ -43,15 +55,45 @@ export class MmCanvasComponent implements OnInit {
 
   showFlag: boolean = true;
 
-  borderRadius: number = 1;
+  showGrid: boolean = false;
 
-  constructor(private mmCore: MindmapService) { 
+  constructor(private mmCore: MindmapService) {}
+
+  ngAfterViewInit(): void {
+    
+    // console.log(this.gridFrame.nativeElement.clientWidth);
+    // console.log(this.gridFrame.nativeElement.clientHeight);
 
     this.initOrigin();
 
     var testDepth = 3;
 
     this.generateExample(testDepth);
+  }
+
+  initOrigin() {
+
+    var frameWidth = this.gridFrame.nativeElement.clientWidth;
+    var frameHeight = this.gridFrame.nativeElement.clientHeight;
+
+    this.colSize = Math.floor(0.01 * frameWidth);
+    this.rowSize = Math.floor(0.02 * frameHeight);
+
+    this.entityWidth = Math.ceil((2 * this.a) / this.colSize);
+    this.entityHeight = Math.ceil((2 * this.b) / this.rowSize);
+
+    var colSize = this.colSize;
+    var rowSize = this.rowSize;
+
+    for (var i = 0; i < Math.floor(frameHeight / rowSize); i++) {
+
+      this.nodeOrigin.push([]);
+      for (var j = 0; j < Math.floor(frameWidth / colSize); j++) {
+
+        var st = j * (colSize);
+        this.nodeOrigin[i].push(new MmBlock(st, st + colSize, rowSize, i, j));  
+      }
+    }
   }
 
   generateExample(depth: number): MmNode | null {
@@ -98,35 +140,15 @@ export class MmCanvasComponent implements OnInit {
     return dice < this.createThreshold; 
   }
 
-  initOrigin() {
+  handleMenuEvent(input: string) {
 
-    var frameWidth = this.frameWidth;
-    var frameHeight = this.frameHeight;
-    var colSize = this.colSize;
-    var rowSize = this.rowSize;
+    if (input === "show grid") {
 
-    for (var i = 0; i < Math.floor(frameHeight / rowSize); i++) {
-
-      this.nodeOrigin.push([]);
-      for (var j = 0; j < Math.floor(frameWidth / colSize); j++) {
-
-        var st = j * (colSize);
-        this.nodeOrigin[i].push(new MmBlock(st, st + colSize, rowSize, i, j));  
-      }
+      this.showGrid = !this.showGrid;
     }
   }
 
-  ngOnInit(): void {
-  }
-
-  handleMenuEvent(input: string) {
-
-  }
-
-  resolveError() {
-
-    
-  }
+  resolveError() {}
 
   grab(ev: MouseEvent) {
 
@@ -228,30 +250,31 @@ export class MmCanvasComponent implements OnInit {
 
       this.dragOn = false;
 
-      var a = 45;
-      var b = 32;
+      var a = this.spotlightNode.getRadiusX();
+      var b = this.spotlightNode.getRadiusY();
 
       var leftEdge = this.spotlightNode.getCx() - a;
       var excess = leftEdge % this.colSize;
 
-      this.spotlightNode.setCx(this.spotlightNode.getCx() - excess + 5);
+      this.spotlightNode.setCx(this.spotlightNode.getCx() - excess);
 
       var topEdge = this.spotlightNode.getCy() - b;
 
-      this.spotlightNode.setCy(this.spotlightNode.getCy() - topEdge % this.rowSize + 5);
+      this.spotlightNode.setCy(this.spotlightNode.getCy() - topEdge % this.rowSize);
 
       // from cx,cy derive tl st block, then attempt migrate, if fail, revert to pregrab state
-      var dims = [3, 2];
+      var enWid = this.entityWidth;
+      var enHei = this.entityHeight;
 
-      var stBlkLoc = [Math.floor(this.spotlightNode.getCx() / this.colSize) - 1, Math.floor(this.spotlightNode.getCy() / this.rowSize) - 1];
+      var stBlkLoc = [Math.floor((this.spotlightNode.getCx() - a) / this.colSize), Math.floor((this.spotlightNode.getCy() - b) / this.rowSize)];
       var st: MmBlock = this.nodeOrigin[stBlkLoc[1]][stBlkLoc[0]];
 
       // first check for containable
-      if (this.containable(st, this.spotlightNode, dims[0], dims[1])) {
+      if (this.containable(st, this.spotlightNode, enWid, enHei)) {
 
         // move child to containable location
-        var cx = st.getStart() + Math.floor((st.getEnd() - st.getStart()) * dims[0] / 2);
-        var cy = st.getRowId() * st.getDispHeight() + Math.floor(st.getDispHeight() * dims[1] / 2);
+        var cx = st.getStart() + Math.floor((st.getEnd() - st.getStart()) * enWid / 2);
+        var cy = st.getRowId() * st.getDispHeight() + Math.floor(st.getDispHeight() * enHei / 2);
 
         this.spotlightNode.setCx(cx);
         this.spotlightNode.setCy(cy);
@@ -679,14 +702,14 @@ export class MmCanvasComponent implements OnInit {
    * allocation not truly flexible, but with projection heuristic, if 1-2 is on the freer side
    * of things in terms of space availablility, then it will be included)
    */
-   fillPartitionItrOrder(order: number[], dims: number[]) {
+   fillPartitionItrOrder(order: number[], entityWidth: number, entityHeight: number) {
 
     // projection heuristic on rows first, fallback on cols, return 'row' or 'col to client
 
     // placeholder, always return rows from 0 to nodeOrigin.length - 1
     // rowWidth = given dims[0]
 
-    for (var i = 0; i < this.nodeOrigin.length - dims[0] - 1; i+=dims[0]) {
+    for (var i = 0; i < this.nodeOrigin.length - entityHeight - 1; i+=entityHeight) {
 
       order.push(i);
     }
@@ -696,13 +719,14 @@ export class MmCanvasComponent implements OnInit {
 
   createOrphan(txt: string, id: string): MmNode | undefined {
 
-    // assert nodes as 2x3 entities in space
-    var dims = [2, 3];
+    // pull defs from global, not directly using, cuz probs later rid of globals
+    var enWid = this.entityWidth;
+    var enHei = this.entityHeight;
     
     var itrOrder: number[] = [];
     var fillRes: string = 'row';
 
-    fillRes = this.fillPartitionItrOrder(itrOrder, dims);
+    fillRes = this.fillPartitionItrOrder(itrOrder, enWid, enHei);
 
     // hehe, randomize order
     itrOrder = this.shuffleOrder(itrOrder);
@@ -714,7 +738,7 @@ export class MmCanvasComponent implements OnInit {
 
         var cands: MmBlock[] = [];
 
-        for (var j = 0; j < this.nodeOrigin[itrOrder[i]].length - dims[1] - 1; j++) {
+        for (var j = 0; j < this.nodeOrigin[itrOrder[i]].length - enWid - 1; j++) {
 
           if (this.nodeOrigin[itrOrder[i]][j].isFree()) {
 
@@ -738,11 +762,11 @@ export class MmCanvasComponent implements OnInit {
 
   allocOrphan(scope: MmBlock[], nodeTxt: string, nodeId: string): MmNode | undefined {
 
-    var entityWidth = 3;
-    var entityHeight = 2;
+    var entityWidth = this.entityWidth;
+    var entityHeight = this.entityHeight;
 
     // containable sets blk col
-    var nd: MmNode = new MmNode(null, -1, -1, nodeTxt, nodeId);
+    var nd: MmNode = new MmNode(null, -1, -1, nodeTxt, nodeId, this.a, this.b);
 
     for (var i = 0; i < scope.length; i++) {
 
@@ -840,8 +864,9 @@ export class MmCanvasComponent implements OnInit {
      *  - if exhaust child level options, return error
      */
 
-    // assert nodes as 3x2 entities in space
-    var dims = [3, 2];
+    // pull entity sizing params from globs
+    var enWid = this.entityWidth;
+    var enHei = this.entityHeight;
 
     var colSize = this.colSize;
     var rowSize = this.rowSize;
@@ -881,15 +906,15 @@ export class MmCanvasComponent implements OnInit {
         var m = rangeList[k];
 
         // in order of top, bot, left, right
-        var bounds: number[] = [pTopRow - m - dims[0], pBotRow + m + 1, pLeftCol - m - dims[1], pRightCol + m + 1];
+        var bounds: number[] = [pTopRow - m - enWid, pBotRow + m + 1, pLeftCol - m - enHei, pRightCol + m + 1];
 
-        var cands: MmBlock[] = this.getRadialLayer(bounds, dims);
+        var cands: MmBlock[] = this.getRadialLayer(bounds, enWid, enHei);
 
         var j = 0;
 
         while (j < cands.length && !relocationComplete) {
 
-          if (this.migrate(cands[j], child, parent, dims)) {
+          if (this.migrate(cands[j], child, parent, enWid, enHei)) {
 
             // recurse to children layer
             relocationComplete = this.radialBlockSpaceSearch(child.getChildrenLinks(), child);
@@ -958,7 +983,7 @@ export class MmCanvasComponent implements OnInit {
     return this.defaultSearchDist + this.perLayerSearchLim * Math.floor(node.getClusterSize() / this.estimateLayerSize);
   }
 
-  getRadialLayer(bounds: number[], dims: number[]): MmBlock[] {
+  getRadialLayer(bounds: number[], entityWidth: number, entityHeight: number): MmBlock[] {
 
     var cands: MmBlock[] = [];
 
@@ -971,7 +996,7 @@ export class MmCanvasComponent implements OnInit {
     if (topBoundRow >= 0) {
 
       var start = Math.max(0, leftBoundCol);
-      var end = Math.min(this.nodeOrigin[0].length - dims[0], rightBoundCol);
+      var end = Math.min(this.nodeOrigin[0].length - entityWidth, rightBoundCol);
 
       for (var i = start; i <= end; i++) {
 
@@ -984,10 +1009,10 @@ export class MmCanvasComponent implements OnInit {
       }
     }
 
-    if (botBoundRow <= this.nodeOrigin.length - dims[1]) {
+    if (botBoundRow <= this.nodeOrigin.length - entityHeight) {
 
       var start = Math.max(0, leftBoundCol);
-      var end = Math.min(this.nodeOrigin[0].length - dims[0], rightBoundCol);
+      var end = Math.min(this.nodeOrigin[0].length - entityWidth, rightBoundCol);
 
       for (var i = start; i <= end; i++) {
 
@@ -1003,7 +1028,7 @@ export class MmCanvasComponent implements OnInit {
     if (leftBoundCol >= 0) {
 
       var start = Math.max(0, topBoundRow) + 1;
-      var end = Math.min(this.nodeOrigin.length - dims[1], botBoundRow) - 1;
+      var end = Math.min(this.nodeOrigin.length - entityHeight, botBoundRow) - 1;
 
       for (var i = start; i <= end; i++) {
 
@@ -1016,10 +1041,10 @@ export class MmCanvasComponent implements OnInit {
       }
     }
 
-    if (rightBoundCol <= this.nodeOrigin[0].length - dims[0]) {
+    if (rightBoundCol <= this.nodeOrigin[0].length - entityWidth) {
 
       var start = Math.max(0, topBoundRow) + 1;
-      var end = Math.min(this.nodeOrigin.length - dims[1], botBoundRow) - 1;
+      var end = Math.min(this.nodeOrigin.length - entityHeight, botBoundRow) - 1;
 
       for (var i = start; i <= end; i++) {
 
@@ -1037,14 +1062,14 @@ export class MmCanvasComponent implements OnInit {
 
   // assert child and pLink are off the grid pre migrate
   // migrate will only change alloc state if migratable
-  migrate(st: MmBlock, child: MmNode, parent: MmNode, dims: number[]): boolean {
+  migrate(st: MmBlock, child: MmNode, parent: MmNode, entityWidth: number, entityHeight: number): boolean {
 
     // first check for containable
-    if (this.containable(st, child, dims[0], dims[1])) {
+    if (this.containable(st, child, entityWidth, entityHeight)) {
 
       // move child to containable location
-      var cx = st.getStart() + Math.floor((st.getEnd() - st.getStart()) * dims[0] / 2);
-      var cy = st.getRowId() * st.getDispHeight() + Math.floor(st.getDispHeight() * dims[1] / 2);
+      var cx = st.getStart() + Math.floor((st.getEnd() - st.getStart()) * entityWidth / 2);
+      var cy = st.getRowId() * st.getDispHeight() + Math.floor(st.getDispHeight() * entityHeight / 2);
 
       child.setCx(cx);
       child.setCy(cy);
@@ -1264,9 +1289,13 @@ export class MmCanvasComponent implements OnInit {
      * 6. return solutions in order of parameters given
      */
 
-    var a = 45;
-    var b = 32;
-    
+    // pull entity sizing params from globs, or alternatively from nodes themselves
+    var fromA = from.getRadiusX();
+    var fromB = from.getRadiusY();
+
+    var toA = to.getRadiusX();
+    var toB = to.getRadiusY();
+
     var ret: number[][] = [];
 
     // handle from vertical align to: node case first
@@ -1274,12 +1303,12 @@ export class MmCanvasComponent implements OnInit {
 
       if (from.getCy() > to.getCy()) {
 
-        ret.push([from.getCx(), from.getCy() - b]);
-        ret.push([to.getCx(), to.getCy() + b]);
+        ret.push([from.getCx(), from.getCy() - fromB]);
+        ret.push([to.getCx(), to.getCy() + toB]);
       } else {
 
-        ret.push([from.getCx(), from.getCy() + b]);
-        ret.push([to.getCx(), to.getCy() - b]);
+        ret.push([from.getCx(), from.getCy() + fromB]);
+        ret.push([to.getCx(), to.getCy() - toB]);
       }
 
       return ret;
@@ -1288,17 +1317,8 @@ export class MmCanvasComponent implements OnInit {
     // assert from.cx !== to.cx, so slope is defined
     var m = (from.getCy() - to.getCy()) / (from.getCx() - to.getCx());
 
-    var c = a * b;
-    var d = m * a;
-
-    // obtain x^2 value
-    var xSq = (c * c) / (b * b + d * d);
-
-    // obtain y's magnitude
-    var yMag = Math.sqrt(b * b * (1 - xSq / (a * a)));
-
-    // obtain x's magnitude
-    var xMag = Math.sqrt(xSq);
+    var fMag: number[] = this.getIntersectionOffsetMagnitude(fromA, fromB, m);
+    var tMag: number[] = this.getIntersectionOffsetMagnitude(toA, toB, m);
 
     // set from: node direction modifier by casing on relative positioning
     // to: node variant is simply from's flipped
@@ -1324,12 +1344,30 @@ export class MmCanvasComponent implements OnInit {
     // console.log(xMag + " is x mag");
     // console.log(yMag + " is y mag");
     // translate raw x/y back to system coord by applying host node's offset with direction modifiers
-    ret.push([from.getCx() + fromXDir * xMag, from.getCy() + fromYDir * yMag]);
-    ret.push([to.getCx() + -1 * fromXDir * xMag, to.getCy() + -1 * fromYDir * yMag]);
+    ret.push([from.getCx() + fromXDir * fMag[0], from.getCy() + fromYDir * fMag[1]]);
+    ret.push([to.getCx() + -1 * fromXDir * tMag[0], to.getCy() + -1 * fromYDir * tMag[1]]);
 
     // console.log(ret);
 
     return ret;
+  }
+
+  getIntersectionOffsetMagnitude(a: number, b: number, m: number): number[] {
+
+    var c = a * b;
+    var d = m * a;
+
+    // obtain x^2 value
+    var xSq = (c * c) / (b * b + d * d);
+
+    // obtain y's magnitude
+    var coef = b / a;
+    var yMag = Math.sqrt(b * b - coef * coef * xSq);
+
+    // obtain x's magnitude
+    var xMag = Math.sqrt(xSq);
+
+    return [xMag, yMag];
   }
 
   freeLink(link: MmLink) {
