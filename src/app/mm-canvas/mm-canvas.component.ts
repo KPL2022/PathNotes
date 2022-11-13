@@ -32,7 +32,7 @@ export class MmCanvasComponent implements AfterViewInit {
   entityWidth!: number;
   entityHeight!: number;
 
-  entityRadius: number = 2;
+  entityRadius: number = 2;  // treat entity as circle with such radius for min dist calcs
   borderRadius: number = 1;
   minSearchDist = this.borderRadius + this.entityRadius;
   

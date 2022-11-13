@@ -204,9 +204,73 @@ post processing & misc items:
 [v] 6. start working on the generative order update, clean up the src code and review the current framework
 
 7. how should mindmaps be represented in persistent storage?
-  - initial experience with from persistent storage context switch implementation
-    - 
-  - window resizing adapt
+  - context switch
+    - implement only to file at this point in the progression
+      - investigation:
+        - reading/writing file
+          - read i know to use HTTP GET
+          - write?
+        - probably best to separate out the info blocks by categories
+          - meta info, nodes, links, active blocks
+          - but single files seems to have its advantages as well
+        [v] local file storage is not progressable to database systems
+          - get a set of assertions, as to how backend services would handle data transactions
+            - http.get seems to work with obj and arrays
+              - what about nested entities?
+                - the references need to be redone it seems
+                - just store as literals, load into memory, then redo the reference linking
+                  - with some kind of ID for entities as needed
+            - context switch appears to be a client side heavy work
+          - with given assertions, write saving side code ->v0.8 hosting update ->loading code
+      - defined info blocks:
+        - meta info
+          - ids used so far
+          - block alloc search dist parameters
+            - entity radius -> min dist
+            - per layer size estimate
+          - entity sizing parameters
+            - a, b for ellipse
+            - border radius
+          - generateExample parameters
+            - threshold, lim
+            - nary splitting factor
+          - highlight color parameters
+          - UI control parameters
+            - show error flag
+            - show menu items?
+              - show grid
+        - active nodes
+        - active links
+      - context switch process:
+        - saving:
+          - check assertions
+            - assert error free premise
+            - assert no active user intervention premise
+          - init saving
+            - save active nodes as array:
+              - use interface to mask out link and block ref
+                - interface should keep block string id collection
+            - save active links with interface that abstracts away node and block ref
+              - string id col for each replaced or choose existing
+                - if choose existing, added object size 
+            - meta-info
+              - package and store 
+        - loading:
+          - check current state, prompt user to save changes?
+            - or should all changes be saved per step auto?
+          - init loading
+            - start filling empty blocks
+            - afterwards, async get nodes -> store in map<string, node>
+              - and mark active blocks
+            - meanwhile, async get links -> store in col but keep nodes unref'ed, only mark blocks
+            - check nodes all loaded, reanimate node refs in links
+        - transaction err handling
+          - to be implemented...
+        - other nuances
+          - what about window sizing diff on reload?
+            - hmm...
+
+  - window resizing adapt with context switch mechanism
 
 *******************this concludes Path Notes v0.7 functional mindmap module
 
@@ -239,3 +303,5 @@ extras
     - imp freeable interface to merge free method calls
     - portlocation calls can be simplified into wrapper
   - angular view child, input, output, learn more about
+  - improve file transaction, i.e more reasonable error handling, other considerations, etc, from
+    - https://angular.io/guide/http
